@@ -71,8 +71,9 @@ def run_sync(user_id, password):
         raw["synced"] = datetime.now().strftime("%Y-%m-%d %H:%M")
         build.save_json(build.RAW_PATH, raw)
         data = build.build(raw)
-        n_sale = sum(1 for g in data["groups"] if not g["soldout"])
-        state.update(msg="불러오기 완료! 그룹 %d개 (판매중 %d개)" % (len(data["groups"]), n_sale), error="",
+        # data["groups"] 는 셀러 사이트에 나가는(판매중) 그룹만 들어 있음
+        n_sale = len(data["groups"]) if data else 0
+        state.update(msg="불러오기 완료! 그룹 %d개 (사이트에 보이는 판매중 %d개)" % (len(raw["groups"]), n_sale), error="",
                      last=raw["synced"])
     except collector.LoginError as e:
         state.update(error=str(e), msg="")
