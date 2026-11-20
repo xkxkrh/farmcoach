@@ -53,8 +53,12 @@ def load_config():
     return build.load_json(CONFIG_PATH, {})
 
 
+GIT_ENV = dict(os.environ, GIT_EDITOR="true", GIT_MERGE_AUTOEDIT="no")
+
+
 def git(*args):
-    r = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    r = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", env=GIT_ENV)
     return r.returncode, (r.stdout + r.stderr).strip()
 
 
@@ -79,21 +83,139 @@ def run_sync(user_id, password):
         state["busy"] = False
 
 
-def publish():
+# ---------------------------------------------------------------------------
+# 올리기 전 자동 받기: 다른 사람이 먼저 올린 내용을 받아 내 내용과 합친 뒤 올림
+# ---------------------------------------------------------------------------
+EDITS_REL = "manager/data/edits.json"
+REGEN_REL = ("docs/data.json", "docs/index.html")   # 프로그램이 만들어 내는 파일 → 합친 뒤 다시 만듦
+_MISSING = object()
+
+
+def _merge3(base, theirs, mine, path, conflicts, resolve):
+    """세 갈래 합치기. theirs = 다른 사람이 올린 것, mine = 내 것, base = 갈라지기 전."""
+    if theirs == mine:
+        return theirs
+    if theirs == base:
+        return mine
+    if mine == base:
+        return theirs
+    if isinstance(theirs, dict) and isinstance(mine, dict) and (base is _MISSING or isinstance(base, dict)):
+        b = base if isinstance(base, dict) else {}
+        out = {}
+        for k in list(theirs.keys()) + [k for k in mine.keys() if k not in theirs] + [k for k in b if k not in theirs and k not in mine]:
+            v = _merge3(b.get(k, _MISSING), theirs.get(k, _MISSING), mine.get(k, _MISSING), path + [k], conflicts, resolve)
+            if v is not _MISSING:
+                out[k] = v
+        return out
+    conflicts.append(path)                       # 같은 칸을 둘 다 다르게 고침
+    return mine if resolve == "mine" else theirs
+
+
+def _conflict_label(path, raw):
+    names = {}
+    if raw:
+        names.update({g["id"]: g["name"] for g in raw.get("groups", [])})
+        names.update({k: o["name"] for k, o in raw.get("options", {}).items()})
+    fields = {"name": "이름", "cat": "카테고리", "ship": "배송비", "jeju": "제주", "island": "도서산간", "link": "상세링크",
+              "img": "사진", "note": "비고", "origin": "원산지", "visible": "보이기", "status": "판매 상태", "price": "가격",
+              "hidden": "숨김"}
+    top = path[0] if path else ""
+    if top in ("groups", "options") and len(path) >= 2:
+        what = "상품" if top == "groups" else "옵션"
+        f = fields.get(path[2], path[2]) if len(path) > 2 else "전체"
+        return "%s '%s'의 %s" % (what, names.get(path[1], path[1]), f)
+    return {"notice": "공지사항", "noticeHtml": "공지사항", "md": "MD추천", "links": "바로가기 버튼",
+            "videos": "영상 목록", "hideFarmPrefix": "설정 '(팜) 숨기기'"}.get(top, top)
+
+
+def _rebase_onto_remote(resolve):
+    """내 커밋들을 원격 최신 위로 옮김. 반환: (ok, conflicts[labels], msg)"""
+    code, out = git("rebase", "--autostash", "origin/main")
+    regen = False
+    for _ in range(50):
+        if code == 0:
+            break
+        unmerged = [f for f in git("diff", "--name-only", "--diff-filter=U")[1].splitlines() if f.strip()]
+        if not unmerged:  # 충돌 없이 멈춤(빈 커밋 등)
+            code, out = git("rebase", "--skip") if "nothing to commit" in out or "empty" in out else git("rebase", "--continue")
+            continue
+        conflicts = []
+        for f in unmerged:
+            if f == EDITS_REL:
+                def stage(n):
+                    c, t = git("show", ":%d:%s" % (n, f))
+                    try:
+                        return json.loads(t) if c == 0 else {}
+                    except ValueError:
+                        return {}
+                # rebase 중: 2번 = 원격(다른 사람), 3번 = 내 커밋
+                merged = _merge3(stage(1), stage(2), stage(3), [], conflicts, resolve)
+                build.save_json(build.EDITS_PATH, merged)
+                git("add", f)
+            elif f in REGEN_REL:
+                git("checkout", "--ours", "--", f)   # 일단 원격 것으로 두고, 끝난 뒤 다시 만듦
+                git("add", f)
+                regen = True
+            else:
+                git("rebase", "--abort")
+                return False, [], "다른 사람이 올린 파일과 겹쳐서 자동으로 합치지 못했어요: %s\n런처에서 [업데이트]를 먼저 누른 뒤 다시 올려 주세요." % f
+        if conflicts and not resolve:
+            git("rebase", "--abort")
+            raw = build.load_json(build.RAW_PATH, None)
+            labels = []
+            for p in conflicts:
+                lb = _conflict_label(p, raw)
+                if lb not in labels:
+                    labels.append(lb)
+            return False, labels, "같은 곳을 다른 사람도 고쳤어요."
+        code, out = git("rebase", "--continue")
+    if code != 0:
+        git("rebase", "--abort")
+        return False, [], "자동으로 합치지 못했어요:\n" + out[-500:]
+    if "autostash" in out.lower() and "conflict" in out.lower():
+        return False, [], "받은 내용과 이 PC에서 고치던 프로그램 파일이 겹쳤어요. 개발 담당자에게 알려 주세요."
+    if regen:
+        build.build()                               # 합쳐진 내용으로 사이트 데이터 다시 만들기
+        git("add", "docs")
+        if git("diff", "--cached", "--quiet")[0] != 0:
+            git("commit", "-m", "합친 내용으로 사이트 데이터 다시 만들기")
+    return True, [], ""
+
+
+def publish(resolve=None):
+    """resolve: None(겹치면 멈추고 물어봄) | 'mine'(겹친 칸은 내 것) | 'theirs'(겹친 칸은 다른 사람 것)"""
     if not os.path.exists(build.OUT_PATH):
-        return False, "아직 불러온 상품이 없어요. 먼저 '팜코치에서 불러오기'를 눌러 주세요."
+        return {"ok": False, "msg": "아직 불러온 상품이 없어요. 먼저 '팜코치에서 불러오기'를 눌러 주세요."}
     git("add", "docs", "manager/data")
-    code, out = git("diff", "--cached", "--quiet")
-    if code == 0:
-        return True, "바뀐 내용이 없어서 올릴 게 없어요. (사이트는 이미 최신이에요)"
-    msg = "상품 정보 업데이트 " + datetime.now().strftime("%Y-%m-%d %H:%M")
-    code, out = git("commit", "-m", msg)
-    if code != 0:
-        return False, "저장(커밋) 실패:\n" + out
-    code, out = git("push")
-    if code != 0:
-        return False, "깃허브에 올리기 실패 (인터넷 연결이나 깃허브 로그인을 확인해 주세요):\n" + out
-    return True, "올리기 완료! 1~2분 뒤 셀러 사이트에 반영돼요."
+    if git("diff", "--cached", "--quiet")[0] != 0:
+        code, out = git("commit", "-m", "상품 정보 업데이트 " + datetime.now().strftime("%Y-%m-%d %H:%M"))
+        if code != 0:
+            return {"ok": False, "msg": "저장(커밋) 실패:\n" + out}
+    received = False
+    for attempt in range(3):
+        code, out = git("fetch", "origin", "main")
+        if code != 0:
+            return {"ok": False, "msg": "깃허브에 연결하지 못했어요 (인터넷 연결을 확인해 주세요):\n" + out[-400:]}
+        behind = git("rev-list", "--count", "HEAD..origin/main")[1].strip()
+        ahead = git("rev-list", "--count", "origin/main..HEAD")[1].strip()
+        if behind not in ("", "0"):                 # 다른 사람이 먼저 올린 게 있음 → 받아서 합치기
+            ok, conflicts, msg = _rebase_onto_remote(resolve)
+            if not ok:
+                return {"ok": False, "conflict": conflicts, "msg": msg}
+            received = True
+            ahead = git("rev-list", "--count", "origin/main..HEAD")[1].strip()
+        if ahead in ("", "0"):
+            return {"ok": True, "received": received,
+                    "msg": "다른 사람이 올린 내용을 받아 왔어요. 내 쪽에는 새로 올릴 게 없어요." if received
+                    else "바뀐 내용이 없어서 올릴 게 없어요. (사이트는 이미 최신이에요)"}
+        code, out = git("push", "origin", "HEAD:main")
+        if code == 0:
+            return {"ok": True, "received": received,
+                    "msg": ("다른 사람이 올린 내용과 합쳐서 " if received else "") + "올리기 완료! 1~2분 뒤 셀러 사이트에 반영돼요."}
+        if "rejected" not in out and "fetch first" not in out and "non-fast-forward" not in out:
+            return {"ok": False, "msg": "깃허브에 올리기 실패 (인터넷 연결이나 깃허브 로그인을 확인해 주세요):\n" + out[-400:]}
+        # 그 사이 누가 또 올림 → 다시 받아서 합치기
+    return {"ok": False, "msg": "다른 사람이 계속 올리고 있어서 잠시 뒤 다시 눌러 주세요."}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -209,8 +331,9 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(200, {"ok": True})
 
         if p == "/api/publish":
-            ok, msg = publish()
-            return self.send(200, {"ok": ok, "msg": msg})
+            resolve = body.get("resolve") if body.get("resolve") in ("mine", "theirs") else None
+            with lock:
+                return self.send(200, publish(resolve))
 
         return self.send(404, {"ok": False})
 

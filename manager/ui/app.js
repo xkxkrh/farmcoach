@@ -493,9 +493,18 @@
     if (!confirm("지금 내용을 셀러 사이트에 올릴까요?")) return;
     var b = this; b.disabled = true; b.textContent = "올리는 중…";
     clearTimeout(saveTimer);
-    api("/api/edits", E).then(function () { return api("/api/publish", {}); }).then(function (r) {
+    function done(r) {
+      // 같은 곳을 다른 사람도 고쳤으면 → 무엇이 겹쳤는지 보여주고 누구 것을 남길지 고르게 함
+      if (!r.ok && r.conflict && r.conflict.length) {
+        var keepMine = confirm("같은 곳을 다른 사람도 고쳤어요:\n\n- " + r.conflict.join("\n- ") +
+          "\n\n[확인] = 이 칸들은 내 것으로 올리기\n[취소] = 이 칸들은 다른 사람 것으로 받기\n\n(겹치지 않은 나머지는 둘 다 그대로 합쳐져요)");
+        return api("/api/publish", { resolve: keepMine ? "mine" : "theirs" }).then(done);
+      }
       toast(r.msg, !r.ok);
-    }).finally(function () { b.disabled = false; b.textContent = "⬆ 사이트에 올리기"; });
+      if (r.received) load();   // 다른 사람이 올린 내용이 합쳐졌으니 화면도 새로 그림
+    }
+    api("/api/edits", E).then(function () { return api("/api/publish", {}); }).then(done)
+      .finally(function () { b.disabled = false; b.textContent = "⬆ 사이트에 올리기"; });
   };
 
   function load(done) {
