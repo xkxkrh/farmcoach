@@ -45,6 +45,10 @@ def read_version():
         return ""
 
 
+# 프로그램을 켤 때의 버전을 기억 (파일이 새 버전으로 바뀌어도, 다시 켜기 전까지는 옛 버전으로 동작 중이라는 뜻)
+RUNNING_VERSION = read_version()
+
+
 def load_config():
     return build.load_json(CONFIG_PATH, {})
 
@@ -147,11 +151,11 @@ class Handler(BaseHTTPRequestHandler):
                 "raw": raw,
                 "edits": build.load_edits(),
                 "savedId": cfg.get("id", ""),
-                "version": read_version(),
+                "version": RUNNING_VERSION,
                 "hasPassword": bool(cfg.get("pw")),
             })
         if p == "/api/progress":
-            return self.send(200, state)
+            return self.send(200, dict(state, version=RUNNING_VERSION))
         if p == "/site" or p.startswith("/site/"):
             return self.serve_file(SITE_DIR, p[len("/site"):])
         return self.serve_file(UI_DIR, p)

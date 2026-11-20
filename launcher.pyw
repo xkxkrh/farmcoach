@@ -17,7 +17,7 @@ import urllib.request
 import webbrowser
 from tkinter import ttk, messagebox
 
-LAUNCHER_VERSION = "1.0.0"
+LAUNCHER_VERSION = "1.1.0"
 REPO_URL = "https://github.com/xkxkrh/farmcoach.git"
 PORT = 8765
 APP_URL = "http://127.0.0.1:%d" % PORT
@@ -130,7 +130,7 @@ class Launcher(tk.Tk):
     def set_buttons(self):
         def apply():
             st = self.state_info
-            can_update = (not self.busy) and (st.get("behind", 0) > 0 or not st.get("installed"))
+            can_update = (not self.busy) and (st.get("behind", 0) > 0 or not st.get("installed") or st.get("need_restart"))
             self.btn_update.configure(state="normal" if can_update else "disabled",
                                       text="설치하기" if not st.get("installed") else "업데이트",
                                       bg=GREEN if can_update else "#d6dbe4", fg="#fff" if can_update else "#555")
@@ -205,11 +205,17 @@ class Launcher(tk.Tk):
         info["behind"] = int(behind) if behind.isdigit() else 0
         dirty = git("status", "--porcelain")[1].strip()
         info["local_v"], info["remote_v"] = local_v, remote_v
+        info["prog_v"] = self.running_version() if info["running"] else ""
+        # 파일은 새 버전인데 켜져 있는 프로그램은 옛 버전 → 다시 켜야 새 기능이 적용됨
+        info["need_restart"] = bool(info["running"] and info["prog_v"] != local_v)
         self.state_info = info
         self.log("내 버전: %s / 최신 버전: %s" % (local_v, remote_v))
         if remote_v != local_v:
             self.set_status("새 버전이 있어요 (%s → %s) · 업데이트를 눌러 주세요" % (local_v, remote_v), ORANGE)
             self.log("새 버전이 있어요. 업데이트를 누르면 받아요.")
+        elif info["need_restart"]:
+            self.set_status("새 버전(%s)을 적용할 수 있어요 · 업데이트를 눌러 주세요" % local_v, ORANGE)
+            self.log("켜져 있는 프로그램은 %s 버전이에요. 업데이트를 누르면 %s 버전으로 다시 켜져요." % (info["prog_v"] or "예전", local_v))
         elif info["behind"]:
             self.set_status("최신입니다 (%s) · 다른 곳에서 올린 내용 %d건 받기 가능" % (local_v, info["behind"]), GREEN)
             self.log("프로그램은 최신이에요. 다른 컴퓨터에서 올린 상품/공지 내용 %d건이 있어요." % info["behind"])
@@ -248,10 +254,16 @@ class Launcher(tk.Tk):
         was_running = running()
         self.log("")
         self.log("--- 업데이트 중 ---")
+        if was_running and self.running_version() and self.running_version() != read(os.path.join(APP_DIR, "VERSION"), ""):
+            self.log("켜져 있는 프로그램을 새 버전으로 바꿔요.")
         self.set_status("업데이트 중… 잠시만 기다려 주세요", BLUE)
         if was_running:
             self.log("업데이트를 위해 프로그램을 잠깐 꺼요.")
             self._shutdown()
+            if running():
+                self.set_status("프로그램을 끄지 못했어요", RED)
+                self.log("※ 프로그램이 꺼지지 않아요. 컴퓨터를 다시 켠 뒤 업데이트를 눌러 주세요.")
+                return
         self.set_bar(30)
         code, out = git("pull", "--rebase", "--autostash", "origin", "main", timeout=600)
         self.log(out[-1200:] or "완료")
@@ -263,9 +275,15 @@ class Launcher(tk.Tk):
         self.set_bar(80)
         self.log("업데이트 완료! (버전 %s)" % read(os.path.join(APP_DIR, "VERSION"), "?"))
         if was_running:
-            self.log("프로그램을 다시 켜요.")
+            self.log("프로그램을 다시 켜요. 열려 있던 프로그램 화면은 15초 안에 자동으로 새 화면으로 바뀌어요.")
             self._start(open_browser=False)
         self._check()
+
+    def running_version(self):
+        try:
+            return json.load(urllib.request.urlopen(APP_URL + "/api/progress", timeout=3)).get("version") or ""
+        except Exception:
+            return ""
 
     # ---------- 실행 / 끄기 ----------
     def run_app(self):

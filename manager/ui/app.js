@@ -187,6 +187,27 @@
   }
   // ---- 서식 있는 공지 편집기 (메모장처럼) ----
   var ed = $("#noticeEd");
+  try { document.execCommand("defaultParagraphSeparator", false, "div"); } catch (e) {}  // 엔터 = 새 줄(div)
+  var COLOR = { foreColor: "#e11d48", hiliteColor: "#fde047" };
+
+  // 줄이 <div> 로 나뉘어 있지 않은 부분(글자, <b>, <br> 로만 이어진 부분)을 한 줄씩 <div> 로 감쌈.
+  // 이렇게 해야 '제목', '목록', '정렬'이 고른 줄에만 정확히 적용됨.
+  var BLOCK = /^(DIV|P|H1|H2|H3|UL|OL|TABLE|HR|BLOCKQUOTE)$/;
+  function normalize() {
+    var kids = [].slice.call(ed.childNodes), line = null, changed = false;
+    kids.forEach(function (n) {
+      if (n.nodeType === 1 && BLOCK.test(n.tagName)) { line = null; return; }
+      if (n.nodeType === 1 && n.tagName === "BR") {
+        if (!line) { line = document.createElement("div"); ed.insertBefore(line, n); }
+        if (!line.childNodes.length) line.appendChild(document.createElement("br"));
+        n.remove(); line = null; changed = true; return;
+      }
+      if (n.nodeType === 3 && !n.nodeValue.trim() && !line) { if (n.nodeValue.indexOf("\n") > -1) n.remove(); return; }
+      if (!line) { line = document.createElement("div"); ed.insertBefore(line, n); }
+      line.appendChild(n); changed = true;
+    });
+    return changed;
+  }
   function edChanged() {
     E.noticeHtml = FC_cleanHtml(ed.innerHTML);
     E.notice = ed.innerText;            // 글자만 있는 예비본 (검색·예전 화면용)
@@ -194,56 +215,107 @@
   }
   function edState() {                   // 지금 커서 위치의 굵게/기울임 등 버튼 켜짐 표시
     document.querySelectorAll("#rtBar button[data-cmd]").forEach(function (b) {
-      var on = false; try { on = document.queryCommandState(b.dataset.cmd); } catch (e) {}
+      var on = false;
+      if (/^(bold|italic|underline|strikeThrough|insertUnorderedList|insertOrderedList|justifyLeft|justifyCenter)$/.test(b.dataset.cmd)) {
+        try { on = document.queryCommandState(b.dataset.cmd); } catch (e) {}
+      }
       b.classList.toggle("on", !!on);
     });
   }
+  // 고른 글자(선택 영역)를 항상 기억 → 도구 버튼·목록상자·색 고르기를 눌러도 잃어버리지 않음
   var savedRange = null;
-  function keepSel() { var s = window.getSelection(); if (s.rangeCount && ed.contains(s.anchorNode)) savedRange = s.getRangeAt(0).cloneRange(); }
-  function restoreSel() { ed.focus(); if (savedRange) { var s = window.getSelection(); s.removeAllRanges(); s.addRange(savedRange); } }
+  document.addEventListener("selectionchange", function () {
+    var s = window.getSelection();
+    if (s.rangeCount && ed.contains(s.getRangeAt(0).commonAncestorContainer)) { savedRange = s.getRangeAt(0).cloneRange(); edState(); }
+  });
+  function restoreSel() {
+    ed.focus();
+    var s = window.getSelection();
+    if (savedRange && ed.contains(savedRange.commonAncestorContainer)) { s.removeAllRanges(); s.addRange(savedRange); }
+    else { var r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); s.removeAllRanges(); s.addRange(r); }
+  }
+  // 선택 영역을 '몇 번째 글자부터 몇 번째 글자까지'로 바꿔 두었다가 되살림 (줄 정리로 모양이 바뀌어도 안 잃어버림)
+  function textPos(node, off) {
+    var w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT), n, count = 0;
+    if (node.nodeType !== 3) {               // 글자 사이가 아니라 요소 사이를 가리키는 경우
+      var r = document.createRange(); r.selectNodeContents(ed); r.setEnd(node, off);
+      return r.toString().length;
+    }
+    while ((n = w.nextNode())) { if (n === node) return count + off; count += n.nodeValue.length; }
+    return count;
+  }
+  function posToPoint(pos, isStart) {
+    // 시작점이 줄 끝/다음 줄 처음 경계에 있으면 '다음 줄 처음'으로 잡아야 윗줄이 딸려오지 않음
+    var w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT), n, last = null;
+    while ((n = w.nextNode())) {
+      var L = n.nodeValue.length;
+      if (isStart ? pos < L : pos <= L) return [n, pos];
+      pos -= L; last = n;
+    }
+    return last ? [last, last.nodeValue.length] : [ed, ed.childNodes.length];
+  }
   function run(cmd, val) {
     restoreSel();
+    if (/^(formatBlock|insertUnorderedList|insertOrderedList|justifyLeft|justifyCenter)$/.test(cmd)) {
+      var s0 = window.getSelection().getRangeAt(0);
+      var a = textPos(s0.startContainer, s0.startOffset), z = textPos(s0.endContainer, s0.endOffset);
+      if (normalize()) {
+        var p1 = posToPoint(a, a < z), p2 = posToPoint(z, false), rr = document.createRange();
+        rr.setStart(p1[0], p1[1]); rr.setEnd(p2[0], p2[1]);
+        var ss = window.getSelection(); ss.removeAllRanges(); ss.addRange(rr); savedRange = rr.cloneRange();
+      }
+    }
     document.execCommand("styleWithCSS", false, cmd === "hiliteColor" || cmd === "foreColor");
-    document.execCommand(cmd, false, val == null ? null : val);
-    keepSel(); edChanged();
+    var ok = document.execCommand(cmd, false, val == null ? null : val);
+    if (!ok && cmd === "hiliteColor") ok = document.execCommand("backColor", false, val);
+    var s = window.getSelection(); if (s.rangeCount) savedRange = s.getRangeAt(0).cloneRange();
+    edChanged();
+    if (!ok) toast("이 서식은 지금 위치에 적용할 수 없어요. 글자를 다시 골라 주세요.", true);
   }
   ed.addEventListener("input", edChanged);
-  ed.addEventListener("keyup", function () { keepSel(); edState(); });
-  ed.addEventListener("mouseup", function () { keepSel(); edState(); });
   ed.addEventListener("paste", function (e) {           // 붙여넣기는 글자만 (이상한 서식 방지)
     e.preventDefault();
     var t = (e.clipboardData || window.clipboardData).getData("text/plain");
     document.execCommand("insertText", false, t);
   });
+  // 도구를 눌러도 글 상자에서 커서가 빠지지 않게
   $("#rtBar").addEventListener("mousedown", function (e) { if (e.target.closest("button")) e.preventDefault(); });
   $("#rtBar").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     if (b.dataset.cmd) return run(b.dataset.cmd);
+    if (b.dataset.color) return run(b.dataset.color, COLOR[b.dataset.color]);   // 색 버튼: 지금 색으로 바로 칠함
     if (b.dataset.act === "link") {
+      var had = savedRange && !savedRange.collapsed;
       var url = prompt("연결할 주소를 넣어 주세요 (https://…)", "https://");
       if (!url || url === "https://") return;
-      if (!/^https?:\/\//i.test(url)) url = "https://" + url;
-      var s = window.getSelection();
-      restoreSel();
-      if (savedRange && !savedRange.collapsed) run("createLink", url);
+      if (!/^(https?:|mailto:|tel:)/i.test(url)) url = "https://" + url;
+      if (had) run("createLink", url);
       else run("insertHTML", '<a href="' + url.replace(/"/g, "%22") + '">' + esc(url) + "</a>&nbsp;");
     } else if (b.dataset.act === "table") {
       var r = parseInt(prompt("줄(가로줄) 수", "3"), 10), c = parseInt(prompt("칸(세로칸) 수", "2"), 10);
       if (!(r > 0 && c > 0 && r <= 30 && c <= 10)) return;
       var h = "<table><tbody>";
       for (var i = 0; i < r; i++) { h += "<tr>"; for (var j = 0; j < c; j++) h += "<td>&nbsp;</td>"; h += "</tr>"; }
-      run("insertHTML", h + "</tbody></table><p><br></p>");
-    } else if (b.dataset.act === "hr") run("insertHTML", "<hr><p><br></p>");
+      run("insertHTML", h + "</tbody></table><div><br></div>");
+    } else if (b.dataset.act === "hr") run("insertHTML", "<hr><div><br></div>");
   });
   $("#rtBar").addEventListener("change", function (e) {
-    var t = e.target; if (!t.dataset.cmd) return;
-    if (t.tagName === "SELECT") { if (!t.value) return; run(t.dataset.cmd, t.dataset.cmd === "formatBlock" ? "<" + t.value + ">" : t.value); t.value = ""; }
-    else { run(t.dataset.cmd, t.value); (t.dataset.cmd === "foreColor" ? $("#fcSw").style.borderBottomColor = t.value : $("#bcSw").style.background = t.value); }
+    var t = e.target;
+    if (t.dataset.pick) {                                   // ▾ 로 새 색을 고르면 그 색을 기억하고 바로 칠함
+      COLOR[t.dataset.pick] = t.value; paintSwatches();
+      return run(t.dataset.pick, t.value);
+    }
+    if (t.tagName === "SELECT" && t.dataset.cmd) {
+      var v = t.value; t.value = "";
+      if (!v) return;
+      run(t.dataset.cmd, t.dataset.cmd === "formatBlock" ? v : v);
+    }
   });
   $("#rtBar").addEventListener("input", function (e) {   // 색 고르는 중에도 미리 보여주기
-    var t = e.target; if (t.type !== "color") return;
-    if (t.dataset.cmd === "foreColor") $("#fcSw").style.borderBottomColor = t.value; else $("#bcSw").style.background = t.value;
+    var t = e.target; if (!t.dataset.pick) return;
+    COLOR[t.dataset.pick] = t.value; paintSwatches();
   });
+  function paintSwatches() { $("#fcSw").style.borderBottomColor = COLOR.foreColor; $("#bcSw").style.background = COLOR.hiliteColor; }
   $("#linkAdd").onclick = function () { E.links.push({ label: "", url: "", color: "blue" }); renderLinks(); save(); };
   $("#linkList").addEventListener("input", function (ev) {
     var r = ev.target.closest(".lrow"); if (!r || !ev.target.dataset.f) return;
@@ -392,6 +464,21 @@
     load(function () { toast("새로고침 했어요"); });
   }
   $("#btnReload").onclick = reload;
+
+  // 런처에서 업데이트하면 프로그램이 새 버전으로 다시 켜짐 → 열려 있던 이 화면도 15초 안에 스스로 새 화면으로 바뀜
+  var LOADED_VERSION = null, updateNotified = false;
+  setInterval(function () {
+    fetch("/api/progress", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (s) {
+      if (!s.version) return;
+      if (LOADED_VERSION === null) { LOADED_VERSION = s.version; return; }
+      if (s.version === LOADED_VERSION || s.busy) return;
+      if (mdDirty) {
+        if (!updateNotified) { updateNotified = true; toast("새 버전(v" + s.version + ")이 적용됐어요. MD추천을 저장한 뒤 [↻ 새로고침]을 눌러 주세요.", true); }
+        return;
+      }
+      location.reload();
+    }).catch(function () {});
+  }, 15000);
   document.addEventListener("keydown", function (e) {
     if (e.key === "F5" && !e.ctrlKey) { e.preventDefault(); reload(); }
   });
@@ -416,12 +503,13 @@
       RAW = s.raw; E = s.edits; OPT = (RAW && RAW.options) || {};
       CATS = (RAW && RAW.categories) || [];
       $("#ver").textContent = s.version ? "v" + s.version : "";
+      if (s.version) LOADED_VERSION = s.version;
       var keepCat = $("#fcat").value;
       $("#fcat").innerHTML = '<option value="">전체 카테고리</option>' + CATS.map(function (c) { return '<option value="' + c.code + '">' + esc(c.name) + "</option>"; }).join("");
       $("#fcat").value = keepCat;
       $("#status").textContent = RAW ? "마지막 불러오기: " + (RAW.synced || "-") + " · 상품그룹 " + RAW.groups.length + "개" : "아직 불러온 적 없음";
       $("#loginInfo").textContent = s.hasPassword ? "저장됨 (아이디: " + s.savedId + ")" : "저장 안 됨";
-      $("#noticeEd").innerHTML = FC_cleanHtml(E.noticeHtml != null ? E.noticeHtml : FC_textToHtml(E.notice)); renderLinks(); renderVideos();
+      $("#noticeEd").innerHTML = FC_cleanHtml(E.noticeHtml != null ? E.noticeHtml : FC_textToHtml(E.notice)); normalize(); renderLinks(); renderVideos();
       MDD = JSON.parse(JSON.stringify(E.md || [])); mdMark(false);
       $("#hidePrefix").checked = E.hideFarmPrefix !== false;
       if ($("#login input[name=id]")) $("#login input[name=id]").value = s.savedId || "";

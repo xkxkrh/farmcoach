@@ -49,6 +49,7 @@
   <section id="tab-notice" class="tab">
     <div class="two">
       <div><h2>공지사항 쓰기</h2><p class="hint">글자를 드래그해서 고른 뒤 위 버튼으로 꾸며요. 주소(https://…)는 자동으로 링크가 돼요.</p>
+        <div class="rt-wrap">
         <div class="rt-bar" id="rtBar">
           <select data-cmd="formatBlock" title="문단 모양">
             <option value="">문단</option><option value="P">본문</option><option value="H1">제목 1</option><option value="H2">제목 2</option><option value="H3">제목 3</option>
@@ -65,8 +66,8 @@
           <button type="button" data-cmd="underline" title="밑줄 (Ctrl+U)"><u>U</u></button>
           <button type="button" data-cmd="strikeThrough" title="취소선"><s>S</s></button>
           <span class="sep"></span>
-          <label class="clr" title="글자색"><span class="a" id="fcSw">가</span><input type="color" data-cmd="foreColor" value="#e11d48"></label>
-          <label class="clr" title="형광펜(배경색)"><span class="a hl" id="bcSw">가</span><input type="color" data-cmd="hiliteColor" value="#fde047"></label>
+          <span class="csplit"><button type="button" data-color="foreColor" title="글자색 칠하기"><span class="a" id="fcSw">가</span></button><label class="pick" title="글자색 고르기">▾<input type="color" data-pick="foreColor" value="#e11d48"></label></span>
+          <span class="csplit"><button type="button" data-color="hiliteColor" title="형광펜 칠하기"><span class="a hl" id="bcSw">가</span></button><label class="pick" title="형광펜 색 고르기">▾<input type="color" data-pick="hiliteColor" value="#fde047"></label></span>
           <span class="sep"></span>
           <button type="button" data-cmd="insertUnorderedList" title="점 목록">• 목록</button>
           <button type="button" data-cmd="insertOrderedList" title="번호 목록">1. 목록</button>
@@ -80,7 +81,8 @@
           <button type="button" data-cmd="undo" title="되돌리기 (Ctrl+Z)">↶</button>
           <button type="button" data-cmd="redo" title="다시하기 (Ctrl+Y)">↷</button>
         </div>
-        <div id="noticeEd" class="rt-ed notice-body" contenteditable="true" spellcheck="false"></div></div>
+        <div id="noticeEd" class="rt-ed notice-body" contenteditable="true" spellcheck="false"></div>
+        </div></div>
       <div><h2>미리보기</h2><div id="noticePrev" class="preview notice-body"></div><div id="linkPrev" class="linkprev"></div></div>
     </div>
     <h2 style="margin-top:24px">바로가기 버튼</h2>
