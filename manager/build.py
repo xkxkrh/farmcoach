@@ -6,7 +6,8 @@ import re
 from datetime import datetime
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RAW_PATH = os.path.join(ROOT, "manager", "cache", "raw.json")
+RAW_PATH = os.path.join(ROOT, "manager", "cache", "raw.json")          # 이 PC에서 불러온 전체 원본 (깃허브에 안 올라감)
+SHARED_RAW_PATH = os.path.join(ROOT, "manager", "data", "raw.json")    # 다른 PC와 나눠 쓰는 원본 (셀러 사이트에 나가는 상품만)
 EDITS_PATH = os.path.join(ROOT, "manager", "data", "edits.json")
 OUT_PATH = os.path.join(ROOT, "docs", "data.json")
 
@@ -69,6 +70,34 @@ def default_edits():
             {"title": "발주 방법 가이드 영상", "file": "media/order-guide.mp4"},
         ],
     }
+
+
+def load_raw():
+    """이 PC의 원본과 깃허브로 받은 원본 중 더 최근에 불러온 것을 씀.
+    그래서 다른 PC에서 [사이트에 올리기]까지 한 마지막 데이터가 어느 PC에서나 보임."""
+    mine = load_json(RAW_PATH, None)
+    shared = load_json(SHARED_RAW_PATH, None)
+    if not mine:
+        return shared
+    if not shared:
+        return mine
+    return shared if shared.get("synced", "") > mine.get("synced", "") else mine
+
+
+def save_shared_raw(raw, visible):
+    """셀러 사이트에 실제로 나가는 상품·옵션만 남겨서 저장 (깃허브가 공개라서 숨긴 상품·거래처 전용 상품은 빼고 올림)."""
+    keep_g = {g["id"]: {o["id"] for o in g["options"]} for g in visible}
+    groups = []
+    for g in raw["groups"]:
+        if g["id"] in keep_g:
+            g = dict(g, options=[o for o in g.get("options", []) if o in keep_g[g["id"]]])
+            groups.append(g)
+    used = {o for g in groups for o in g["options"]}
+    shared = {k: v for k, v in raw.items() if k not in ("groups", "options")}
+    shared["groups"] = groups
+    shared["options"] = {k: v for k, v in raw.get("options", {}).items() if k in used}
+    if load_json(SHARED_RAW_PATH, None) != shared:
+        save_json(SHARED_RAW_PATH, shared)
 
 
 def load_edits():
@@ -134,7 +163,7 @@ def merged_group(g, raw_opts, edits):
 
 
 def build(raw=None, edits=None):
-    raw = raw if raw is not None else load_json(RAW_PATH, None)
+    raw = raw if raw is not None else load_raw()
     edits = edits if edits is not None else load_edits()
     if not raw:
         return None
@@ -170,6 +199,7 @@ def build(raw=None, edits=None):
         "groups": visible,
     }
     save_json(OUT_PATH, data, compact=True)
+    save_shared_raw(raw, visible)
     stamp_versions()
     return data
 

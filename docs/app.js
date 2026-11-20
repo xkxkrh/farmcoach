@@ -195,7 +195,13 @@
     if (th && th.dataset.big) { var w = $("#viewer"); w.querySelector("img").src = th.dataset.big; w.showModal(); return; }
     var dr = e.target.closest("[data-drop]"); if (dr) { toggleDrop(dr.dataset.drop); return; }
     if (e.target.closest("[data-cmp]") || e.target.closest("#cmpOpen")) { openCompare(); return; }
-    if (e.target.closest("#cmpClear")) { picked = []; route(); return; }
+    if (e.target.closest("#cmpClear")) {
+      // 화면을 다시 그리지 않고 체크만 풀어서, 보던 스크롤 위치가 그대로 남게 함
+      picked = [];
+      main.querySelectorAll("[data-pick]").forEach(function (cb) { cb.checked = false; });
+      main.querySelectorAll(".pc.picked").forEach(function (c) { c.classList.remove("picked"); });
+      updateCmp(); return;
+    }
     var un = e.target.closest("[data-unpick]");
     if (un) {
       picked = picked.filter(function (id) { return id !== un.dataset.unpick; });

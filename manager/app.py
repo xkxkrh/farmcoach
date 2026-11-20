@@ -87,6 +87,7 @@ def run_sync(user_id, password):
 # 올리기 전 자동 받기: 다른 사람이 먼저 올린 내용을 받아 내 내용과 합친 뒤 올림
 # ---------------------------------------------------------------------------
 EDITS_REL = "manager/data/edits.json"
+RAW_REL = "manager/data/raw.json"                    # 나눠 쓰는 상품 원본 → 겹치면 더 최근에 불러온 쪽을 씀
 REGEN_REL = ("docs/data.json", "docs/index.html")   # 프로그램이 만들어 내는 파일 → 합친 뒤 다시 만듦
 _MISSING = object()
 
@@ -152,6 +153,18 @@ def _rebase_onto_remote(resolve):
                 merged = _merge3(stage(1), stage(2), stage(3), [], conflicts, resolve)
                 build.save_json(build.EDITS_PATH, merged)
                 git("add", f)
+            elif f == RAW_REL:
+                def stage_raw(n):
+                    c, t = git("show", ":%d:%s" % (n, f))
+                    try:
+                        return json.loads(t) if c == 0 else {}
+                    except ValueError:
+                        return {}
+                theirs, mine = stage_raw(2), stage_raw(3)
+                newer = mine if mine.get("synced", "") > theirs.get("synced", "") else theirs
+                build.save_json(build.SHARED_RAW_PATH, newer)
+                git("add", f)
+                regen = True
             elif f in REGEN_REL:
                 git("checkout", "--ours", "--", f)   # 일단 원격 것으로 두고, 끝난 뒤 다시 만듦
                 git("add", f)
@@ -161,7 +174,7 @@ def _rebase_onto_remote(resolve):
                 return False, [], "다른 사람이 올린 파일과 겹쳐서 자동으로 합치지 못했어요: %s\n런처에서 [업데이트]를 먼저 누른 뒤 다시 올려 주세요." % f
         if conflicts and not resolve:
             git("rebase", "--abort")
-            raw = build.load_json(build.RAW_PATH, None)
+            raw = build.load_raw()
             labels = []
             for p in conflicts:
                 lb = _conflict_label(p, raw)
@@ -176,7 +189,7 @@ def _rebase_onto_remote(resolve):
         return False, [], "받은 내용과 이 PC에서 고치던 프로그램 파일이 겹쳤어요. 개발 담당자에게 알려 주세요."
     if regen:
         build.build()                               # 합쳐진 내용으로 사이트 데이터 다시 만들기
-        git("add", "docs")
+        git("add", "docs", "manager/data")
         if git("diff", "--cached", "--quiet")[0] != 0:
             git("commit", "-m", "합친 내용으로 사이트 데이터 다시 만들기")
     return True, [], ""
@@ -267,7 +280,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         p = urlparse(self.path).path
         if p == "/api/state":
-            raw = build.load_json(build.RAW_PATH, None)
+            raw = build.load_raw()
             cfg = load_config()
             return self.send(200, {
                 "raw": raw,
