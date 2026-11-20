@@ -18,8 +18,10 @@
     return esc(s).replace(/https?:\/\/[^\s<]+/g, function (u) { return '<a href="' + u + '" target="_blank" rel="noopener">' + u + "</a>"; });
   }
   function won(n) { return Number(n || 0).toLocaleString("ko-KR") + "원"; }
-  function img(g) {
-    return g.img ? '<img src="' + esc(g.img) + '" alt="" loading="lazy">' : '<span class="noimg">사진 없음</span>';
+  // big=true: 카드처럼 크게 보이는 곳은 원본(1000px) 사진, 작은 자리는 100px 미리보기 사진
+  function img(g, big) {
+    var src = big ? (g.big || g.img) : g.img;
+    return src ? '<img src="' + esc(src) + '" alt="" loading="lazy" decoding="async">' : '<span class="noimg">사진 없음</span>';
   }
   function isNew(g) {
     var a = new Date(g.date.replace(" ", "T")), b = new Date((D.updated || "").replace(" ", "T"));
@@ -100,7 +102,7 @@
     }).join("");
     return '<article class="card pc' + (on ? " picked" : "") + '" id="g' + g.id + '">' +
       '<label class="pick"><input type="checkbox" data-pick="' + g.id + '"' + (on ? " checked" : "") + ">비교</label>" +
-      '<button class="thumb" type="button" data-big="' + esc(g.big || g.img) + '" aria-label="사진 크게 보기">' + img(g) + "</button>" +
+      '<button class="thumb" type="button" data-big="' + esc(g.big || g.img) + '" aria-label="사진 크게 보기">' + img(g, true) + "</button>" +
       '<div class="pb"><div class="badges">' + (isNew(g) ? '<span class="b b-new">NEW</span>' : "") + taxBadge(g.tax) + "</div>" +
       "<h3>" + esc(g.name) + "</h3>" + facts(g) +
       '<div class="price">' + won(minPrice(g)) + (g.options.length > 1 ? "~<small>옵션 " + g.options.length + "개</small>" : "") + "</div>" +
@@ -153,7 +155,7 @@
     var gs = picked.map(function (id) { return byId[id]; });
     function row(label, f) { return "<tr><th>" + label + "</th>" + gs.map(function (g) { return "<td>" + f(g) + "</td>"; }).join("") + "</tr>"; }
     var t = '<table class="cmpt"><tbody>' +
-      row("사진", function (g) { return g.img ? '<img src="' + esc(g.img) + '" alt="">' : ""; }) +
+      row("사진", function (g) { return g.img ? '<img src="' + esc(g.big || g.img) + '" alt="">' : ""; }) +
       row("상품명", function (g) { return '<div class="nm">' + esc(g.name) + '</div><div class="badges" style="margin-top:6px">' + taxBadge(g.tax) + "</div>"; }) +
       row("최저 공급가", function (g) { return "<b>" + won(minPrice(g)) + "</b>"; }) +
       row("옵션·공급가", function (g) { return '<div class="ol">' + g.options.map(function (o) { return "<div><span>" + esc(o.name) + "</span><b>" + won(o.price) + "</b></div>"; }).join("") + "</div>"; }) +
