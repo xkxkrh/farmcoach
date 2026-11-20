@@ -386,6 +386,15 @@
     });
   }
   $("#btnSync").onclick = function () { startSync(); };
+  // 새로고침: 저장된 내용을 다시 읽어서 화면을 새로 그림 (보던 상품·탭은 그대로)
+  function reload() {
+    if (mdDirty && !confirm("MD추천에 저장 안 된 변경이 있어요. 새로고침하면 사라져요. 계속할까요?")) return;
+    load(function () { toast("새로고침 했어요"); });
+  }
+  $("#btnReload").onclick = reload;
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "F5" && !e.ctrlKey) { e.preventDefault(); reload(); }
+  });
   $("#login").addEventListener("close", function () {
     var f = $("#loginForm");
     if (this.returnValue === "ok") startSync({ id: f.id.value.trim(), pw: f.pw.value, remember: f.remember.checked });
@@ -402,11 +411,14 @@
     }).finally(function () { b.disabled = false; b.textContent = "⬆ 사이트에 올리기"; });
   };
 
-  function load() {
+  function load(done) {
     api("/api/state").then(function (s) {
       RAW = s.raw; E = s.edits; OPT = (RAW && RAW.options) || {};
       CATS = (RAW && RAW.categories) || [];
+      $("#ver").textContent = s.version ? "v" + s.version : "";
+      var keepCat = $("#fcat").value;
       $("#fcat").innerHTML = '<option value="">전체 카테고리</option>' + CATS.map(function (c) { return '<option value="' + c.code + '">' + esc(c.name) + "</option>"; }).join("");
+      $("#fcat").value = keepCat;
       $("#status").textContent = RAW ? "마지막 불러오기: " + (RAW.synced || "-") + " · 상품그룹 " + RAW.groups.length + "개" : "아직 불러온 적 없음";
       $("#loginInfo").textContent = s.hasPassword ? "저장됨 (아이디: " + s.savedId + ")" : "저장 안 됨";
       $("#noticeEd").innerHTML = FC_cleanHtml(E.noticeHtml != null ? E.noticeHtml : FC_textToHtml(E.notice)); renderLinks(); renderVideos();
@@ -414,7 +426,8 @@
       $("#hidePrefix").checked = E.hideFarmPrefix !== false;
       if ($("#login input[name=id]")) $("#login input[name=id]").value = s.savedId || "";
       renderList(); renderEdit(); renderMD();
-    });
+      if (done) done();
+    }).catch(function () { toast("프로그램과 연결이 끊겼어요. 런처에서 '실행'을 다시 눌러 주세요.", true); });
   }
   load();
 })();

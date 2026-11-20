@@ -37,6 +37,14 @@ state = {"busy": False, "msg": "", "done": 0, "total": 0, "error": "", "last": "
 lock = threading.Lock()
 
 
+def read_version():
+    try:
+        with open(os.path.join(ROOT, "VERSION"), encoding="utf-8") as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return ""
+
+
 def load_config():
     return build.load_json(CONFIG_PATH, {})
 
@@ -139,6 +147,7 @@ class Handler(BaseHTTPRequestHandler):
                 "raw": raw,
                 "edits": build.load_edits(),
                 "savedId": cfg.get("id", ""),
+                "version": read_version(),
                 "hasPassword": bool(cfg.get("pw")),
             })
         if p == "/api/progress":
@@ -182,6 +191,11 @@ class Handler(BaseHTTPRequestHandler):
             if os.path.exists(CONFIG_PATH):
                 os.remove(CONFIG_PATH)
             return self.send(200, {"ok": True})
+
+        if p == "/api/shutdown":  # 런처가 업데이트 전에 프로그램을 끌 때 사용
+            self.send(200, {"ok": True})
+            threading.Thread(target=self.server.shutdown, daemon=True).start()
+            return
 
         if p == "/api/video-delete":
             rel = body.get("file", "")
@@ -233,6 +247,7 @@ def main():
     if "--no-browser" not in sys.argv:
         webbrowser.open(url)
     server.serve_forever()
+    server.server_close()
 
 
 if __name__ == "__main__":
