@@ -18,3 +18,11 @@ with zipfile.ZipFile(OUT, "w", zipfile.ZIP_DEFLATED) as z:  # 한글 파일 이�
     for src, arc in FILES:
         z.write(src, arc)
 print(OUT, os.path.getsize(OUT), "bytes")
+
+# 메신저로는 .bat 이 든 압축파일을 못 보내서, 사이트에도 올려 '내려받기 링크'로 전달함
+# 주소: https://xkxkrh.github.io/farmcoach/download/farmcoach-launcher.zip
+import shutil
+WEB = os.path.join(ROOT, "docs", "download", "farmcoach-launcher.zip")
+os.makedirs(os.path.dirname(WEB), exist_ok=True)
+shutil.copyfile(OUT, WEB)
+print(WEB)
