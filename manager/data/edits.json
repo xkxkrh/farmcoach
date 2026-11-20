@@ -42,5 +42,5 @@
    "file": "media/order-guide.mp4"
   }
  ],
- "noticeHtml": "<div><font size=\"5\"><b>📢 발주 관련 안내사항</b></font></div><div><br></div><div><b><font size=\"4\">■ <span style=\"color:rgb(225, 29, 72)\">예치금 충전 → 입금</span> 순서로 진행</font></b>하셔야 오류가 없습니다!&nbsp;</div><div><br></div><div>■ 꼭 <font size=\"4\"><b>입금자명과 완전 동일하게</b></font> 입금해주셔야 오류가 없습니다!</div><div>입금자명은 '띄어쓰기'도 다르게 인식합니다.&nbsp;</div><div>입금자명은 '주식회사'와 '(주)'도 다르게 인식합니다.&nbsp;</div><div><br></div><div>■ 메모기능 사용은 피해주세요!</div><div>은행 입금 중 메모 작성시 일부 은행 <b><font size=\"4\">오류 발생</font></b>할 수 있습니다.</div>"
+ "noticeHtml": "<div><font size=\"5\"><b>📢 발주 관련 안내사항</b></font></div><div><br></div><div><b><font size=\"4\">■ <span style=\"color:rgb(225, 29, 72)\">예치금 충전 → 입금</span> 순서로 진행</font></b>하셔야 오류가 없습니다!&nbsp;</div><div><br></div><div>■ 꼭 <font size=\"4\"><b>입금자명과 완전 동일하게</b></font> 입금해주셔야 오류가 없습니다!</div><div>입금자명은 '띄어쓰기'도 다르게 인식합니다.&nbsp;</div><div>입금자명은 '주식회사'와 '(주)'도 다르게 인식합니다.&nbsp;</div><div><br></div><div>■ 메모기능 사용은 피해주세요!</div><div>은행 입금 중 <b><font size=\"4\">메모 작성시</font></b> 일부 은행 <b><font size=\"4\">오류 발생</font></b>할 수 있습니다.</div>"
 }
