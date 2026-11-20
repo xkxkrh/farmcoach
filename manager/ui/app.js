@@ -170,7 +170,7 @@
   // ---------- 공지사항 + 바로가기 버튼 ----------
   var COLORS = [["blue", "파랑"], ["green", "초록"], ["yellow", "노랑"], ["dark", "검정"], ["red", "빨강"]];
   function renderNotice() {
-    $("#noticePrev").innerHTML = linkify(E.notice);
+    $("#noticePrev").innerHTML = FC_cleanHtml(E.noticeHtml != null ? E.noticeHtml : FC_textToHtml(E.notice));
     $("#linkPrev").innerHTML = (E.links || []).filter(function (l) { return l.label; }).map(function (l) {
       return '<a class="lbtn ' + esc(l.color || "blue") + '" href="' + esc(l.url) + '" target="_blank">' + esc(l.label) + " ›</a>";
     }).join("") + (E.videos || []).map(function (v) { return '<span class="lbtn dark">▶ ' + esc(v.title) + "</span>"; }).join("");
@@ -185,7 +185,65 @@
     }).join("") || '<p class="hint">버튼이 없어요.</p>';
     renderNotice();
   }
-  $("#notice").addEventListener("input", function () { E.notice = this.value; renderNotice(); save(); });
+  // ---- 서식 있는 공지 편집기 (메모장처럼) ----
+  var ed = $("#noticeEd");
+  function edChanged() {
+    E.noticeHtml = FC_cleanHtml(ed.innerHTML);
+    E.notice = ed.innerText;            // 글자만 있는 예비본 (검색·예전 화면용)
+    renderNotice(); save(); edState();
+  }
+  function edState() {                   // 지금 커서 위치의 굵게/기울임 등 버튼 켜짐 표시
+    document.querySelectorAll("#rtBar button[data-cmd]").forEach(function (b) {
+      var on = false; try { on = document.queryCommandState(b.dataset.cmd); } catch (e) {}
+      b.classList.toggle("on", !!on);
+    });
+  }
+  var savedRange = null;
+  function keepSel() { var s = window.getSelection(); if (s.rangeCount && ed.contains(s.anchorNode)) savedRange = s.getRangeAt(0).cloneRange(); }
+  function restoreSel() { ed.focus(); if (savedRange) { var s = window.getSelection(); s.removeAllRanges(); s.addRange(savedRange); } }
+  function run(cmd, val) {
+    restoreSel();
+    document.execCommand("styleWithCSS", false, cmd === "hiliteColor" || cmd === "foreColor");
+    document.execCommand(cmd, false, val == null ? null : val);
+    keepSel(); edChanged();
+  }
+  ed.addEventListener("input", edChanged);
+  ed.addEventListener("keyup", function () { keepSel(); edState(); });
+  ed.addEventListener("mouseup", function () { keepSel(); edState(); });
+  ed.addEventListener("paste", function (e) {           // 붙여넣기는 글자만 (이상한 서식 방지)
+    e.preventDefault();
+    var t = (e.clipboardData || window.clipboardData).getData("text/plain");
+    document.execCommand("insertText", false, t);
+  });
+  $("#rtBar").addEventListener("mousedown", function (e) { if (e.target.closest("button")) e.preventDefault(); });
+  $("#rtBar").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.cmd) return run(b.dataset.cmd);
+    if (b.dataset.act === "link") {
+      var url = prompt("연결할 주소를 넣어 주세요 (https://…)", "https://");
+      if (!url || url === "https://") return;
+      if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+      var s = window.getSelection();
+      restoreSel();
+      if (savedRange && !savedRange.collapsed) run("createLink", url);
+      else run("insertHTML", '<a href="' + url.replace(/"/g, "%22") + '">' + esc(url) + "</a>&nbsp;");
+    } else if (b.dataset.act === "table") {
+      var r = parseInt(prompt("줄(가로줄) 수", "3"), 10), c = parseInt(prompt("칸(세로칸) 수", "2"), 10);
+      if (!(r > 0 && c > 0 && r <= 30 && c <= 10)) return;
+      var h = "<table><tbody>";
+      for (var i = 0; i < r; i++) { h += "<tr>"; for (var j = 0; j < c; j++) h += "<td>&nbsp;</td>"; h += "</tr>"; }
+      run("insertHTML", h + "</tbody></table><p><br></p>");
+    } else if (b.dataset.act === "hr") run("insertHTML", "<hr><p><br></p>");
+  });
+  $("#rtBar").addEventListener("change", function (e) {
+    var t = e.target; if (!t.dataset.cmd) return;
+    if (t.tagName === "SELECT") { if (!t.value) return; run(t.dataset.cmd, t.dataset.cmd === "formatBlock" ? "<" + t.value + ">" : t.value); t.value = ""; }
+    else { run(t.dataset.cmd, t.value); (t.dataset.cmd === "foreColor" ? $("#fcSw").style.borderBottomColor = t.value : $("#bcSw").style.background = t.value); }
+  });
+  $("#rtBar").addEventListener("input", function (e) {   // 색 고르는 중에도 미리 보여주기
+    var t = e.target; if (t.type !== "color") return;
+    if (t.dataset.cmd === "foreColor") $("#fcSw").style.borderBottomColor = t.value; else $("#bcSw").style.background = t.value;
+  });
   $("#linkAdd").onclick = function () { E.links.push({ label: "", url: "", color: "blue" }); renderLinks(); save(); };
   $("#linkList").addEventListener("input", function (ev) {
     var r = ev.target.closest(".lrow"); if (!r || !ev.target.dataset.f) return;
@@ -351,7 +409,7 @@
       $("#fcat").innerHTML = '<option value="">전체 카테고리</option>' + CATS.map(function (c) { return '<option value="' + c.code + '">' + esc(c.name) + "</option>"; }).join("");
       $("#status").textContent = RAW ? "마지막 불러오기: " + (RAW.synced || "-") + " · 상품그룹 " + RAW.groups.length + "개" : "아직 불러온 적 없음";
       $("#loginInfo").textContent = s.hasPassword ? "저장됨 (아이디: " + s.savedId + ")" : "저장 안 됨";
-      $("#notice").value = E.notice; renderLinks(); renderVideos();
+      $("#noticeEd").innerHTML = FC_cleanHtml(E.noticeHtml != null ? E.noticeHtml : FC_textToHtml(E.notice)); renderLinks(); renderVideos();
       MDD = JSON.parse(JSON.stringify(E.md || [])); mdMark(false);
       $("#hidePrefix").checked = E.hideFarmPrefix !== false;
       if ($("#login input[name=id]")) $("#login input[name=id]").value = s.savedId || "";

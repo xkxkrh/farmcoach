@@ -77,7 +77,8 @@
         (isNew(g) ? '<span class="b b-new">NEW</span>' : "<span></span>") + "</a>";
     }).join("");
     main.innerHTML = '<div class="home"><div>' +
-      '<section class="card notice"><h2 class="h">📢 공지사항</h2><div class="body">' + linkify(D.notice) + "</div>" +
+      '<section class="card notice"><h2 class="h">📢 공지사항</h2>' +
+      (D.noticeHtml != null && window.FC_cleanHtml ? '<div class="body rich">' + FC_cleanHtml(D.noticeHtml) + "</div>" : '<div class="body">' + linkify(D.notice) + "</div>") +
       '<div class="links">' + linkButtons() + "</div></section>" +
       '<section class="card latest"><h2 class="h">🆕 최근 등록 상품</h2>' + (latest || '<p class="empty">아직 상품이 없어요.</p>') + "</section>" +
       '</div><aside class="card md"><h2 class="h">⭐ 금주의 MD추천 상품!</h2>' +

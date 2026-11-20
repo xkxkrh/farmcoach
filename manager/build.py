@@ -162,6 +162,7 @@ def build(raw=None, edits=None):
         "updated": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "synced": raw.get("synced", ""),
         "notice": edits.get("notice", ""),
+        "noticeHtml": edits.get("noticeHtml"),  # 서식 있는 공지 (없으면 위 글자를 그대로 씀)
         "links": [l for l in edits.get("links", []) if l.get("label") and l.get("url")],
         "videos": [v for v in edits.get("videos", []) if v.get("file")],
         "categories": raw.get("categories", []),

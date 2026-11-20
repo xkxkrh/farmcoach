@@ -60,6 +60,11 @@ svg{display:block}
 .home{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
 .notice{padding:22px 24px}
 .notice .body{white-space:pre-wrap;font-size:15.5px;line-height:1.75;overflow-wrap:anywhere}
+.notice .body.rich{white-space:normal}
+.notice .rich h1{font-size:26px;margin:.4em 0;line-height:1.35}.notice .rich h2{font-size:21px;margin:.4em 0}.notice .rich h3{font-size:18px;margin:.4em 0}
+.notice .rich p{margin:0 0 .4em}.notice .rich ul,.notice .rich ol{margin:.3em 0;padding-left:1.6em}
+.notice .rich table{border-collapse:collapse;margin:.5em 0;max-width:100%}.notice .rich td,.notice .rich th{border:1px solid #cfd6cc;padding:6px 10px}
+.notice .rich hr{border:0;border-top:1px solid var(--line);margin:.8em 0}
 .md{padding:20px;border:2px solid var(--brand);position:sticky;top:80px}
 .md .h{color:var(--brand-ink)}
 .md-item{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;padding:14px 0;border-top:1px solid var(--line);text-decoration:none;color:inherit}

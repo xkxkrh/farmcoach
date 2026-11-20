@@ -47,9 +47,40 @@
 
   <section id="tab-notice" class="tab">
     <div class="two">
-      <div><h2>공지사항 쓰기</h2><p class="hint">여기에 쓴 내용이 셀러 사이트 홈 화면에 그대로 나와요. 주소(https://…)는 자동으로 링크가 돼요.</p>
-        <textarea id="notice" rows="22"></textarea></div>
-      <div><h2>미리보기</h2><div id="noticePrev" class="preview"></div><div id="linkPrev" class="linkprev"></div></div>
+      <div><h2>공지사항 쓰기</h2><p class="hint">글자를 드래그해서 고른 뒤 위 버튼으로 꾸며요. 주소(https://…)는 자동으로 링크가 돼요.</p>
+        <div class="rt-bar" id="rtBar">
+          <select data-cmd="formatBlock" title="문단 모양">
+            <option value="">문단</option><option value="P">본문</option><option value="H1">제목 1</option><option value="H2">제목 2</option><option value="H3">제목 3</option>
+          </select>
+          <select data-cmd="fontName" title="글꼴">
+            <option value="">글꼴</option><option value="Malgun Gothic">맑은 고딕</option><option value="Gulim">굴림</option><option value="Dotum">돋움</option><option value="Batang">바탕</option><option value="Gungsuh">궁서</option><option value="Arial">Arial</option>
+          </select>
+          <select data-cmd="fontSize" title="글자 크기">
+            <option value="">크기</option><option value="1">아주 작게</option><option value="2">작게</option><option value="3">보통</option><option value="4">조금 크게</option><option value="5">크게</option><option value="6">아주 크게</option><option value="7">제일 크게</option>
+          </select>
+          <span class="sep"></span>
+          <button type="button" data-cmd="bold" title="굵게 (Ctrl+B)"><b>B</b></button>
+          <button type="button" data-cmd="italic" title="기울임 (Ctrl+I)"><i>I</i></button>
+          <button type="button" data-cmd="underline" title="밑줄 (Ctrl+U)"><u>U</u></button>
+          <button type="button" data-cmd="strikeThrough" title="취소선"><s>S</s></button>
+          <span class="sep"></span>
+          <label class="clr" title="글자색"><span class="a" id="fcSw">가</span><input type="color" data-cmd="foreColor" value="#e11d48"></label>
+          <label class="clr" title="형광펜(배경색)"><span class="a hl" id="bcSw">가</span><input type="color" data-cmd="hiliteColor" value="#fde047"></label>
+          <span class="sep"></span>
+          <button type="button" data-cmd="insertUnorderedList" title="점 목록">• 목록</button>
+          <button type="button" data-cmd="insertOrderedList" title="번호 목록">1. 목록</button>
+          <button type="button" data-cmd="justifyLeft" title="왼쪽 정렬">⇤</button>
+          <button type="button" data-cmd="justifyCenter" title="가운데 정렬">≡</button>
+          <span class="sep"></span>
+          <button type="button" data-act="link" title="링크 넣기">🔗 링크</button>
+          <button type="button" data-act="table" title="표 넣기">▦ 표</button>
+          <button type="button" data-act="hr" title="구분선">― 선</button>
+          <button type="button" data-cmd="removeFormat" title="서식 지우기">✕ 서식 지우기</button>
+          <button type="button" data-cmd="undo" title="되돌리기 (Ctrl+Z)">↶</button>
+          <button type="button" data-cmd="redo" title="다시하기 (Ctrl+Y)">↷</button>
+        </div>
+        <div id="noticeEd" class="rt-ed notice-body" contenteditable="true" spellcheck="false"></div></div>
+      <div><h2>미리보기</h2><div id="noticePrev" class="preview notice-body"></div><div id="linkPrev" class="linkprev"></div></div>
     </div>
     <h2 style="margin-top:24px">바로가기 버튼</h2>
     <p class="hint">공지사항 아래에 큰 버튼으로 나와요. 누르면 적어둔 주소로 이동해요. (영상 버튼은 '영상' 탭에서 넣으면 자동으로 생겨요)</p>
@@ -97,6 +128,7 @@
 
 <div id="busy" class="busy" hidden><div class="box"><b id="busyMsg">불러오는 중…</b><div class="bar"><i id="busyBar"></i></div><small>상품이 많으면 1~2분 걸려요.</small></div></div>
 <div class="toast" id="toast"></div>
+<script src="/site/notice.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
