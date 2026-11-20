@@ -3,3 +3,4 @@ manager/config.json
 manager/cache/
 __pycache__/
 *.tmp
+dist/
