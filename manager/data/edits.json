@@ -1,5 +1,5 @@
 {
- "notice": "■ 공지사항 필독 부탁드립니다! ■\n\n1. 입점사이트 안내\nㄴ https://zrr.kr/KBvjLs\n\n\n2. 발주가이드 안내\nㄴ https://zrr.kr/PbQTJU\n\n\n3. 문의링크 안내\n▶ 발주 / 정산 / CS문의 채널톡\nㄴ http://pf.kakao.com/_AxhRWn\n\n▶ 상품 / MD문의 채널톡\nㄴ http://pf.kakao.com/_UympG",
+ "notice": "📢 발주 관련 안내사항\n\n\n■ 예치금 충전 → 입금 순서로 진행하셔야 오류가 없습니다! \n\n\n■ 꼭 입금자명과 완전 동일하게 입금해주셔야 오류가 없습니다!\n입금자명은 '띄어쓰기'도 다르게 인식합니다. \n입금자명은 '주식회사'와 '(주)'도 다르게 인식합니다. \n\n\n■ 메모기능 사용은 피해주세요!\n은행 입금 중 메모 작성시 일부 은행 오류 발생할 수 있습니다.",
  "md": [],
  "hideFarmPrefix": true,
  "groups": {
@@ -42,5 +42,5 @@
    "file": "media/order-guide.mp4"
   }
  ],
- "noticeHtml": "■ 공지사항 필독 부탁드립니다! ■<br><br>1. 입점사이트 안내<br>ㄴ <a href=\"https://zrr.kr/KBvjLs\">https://zrr.kr/KBvjLs</a><br><br><br>2. 발주가이드 안내<br>ㄴ <a href=\"https://zrr.kr/PbQTJU\">https://zrr.kr/PbQTJU</a><br><br><br>3. 문의링크 안내<br>▶ 발주 / 정산 / CS문의 채널톡<br>ㄴ <a href=\"http://pf.kakao.com/_AxhRWn\">http://pf.kakao.com/_AxhRWn</a><br><br>▶ 상품 / MD문의 채널톡<br>ㄴ <a href=\"http://pf.kakao.com/_UympG\">http://pf.kakao.com/_UympG</a>"
+ "noticeHtml": "<div><font size=\"5\"><b>📢 발주 관련 안내사항</b></font></div><div><br></div><b><font size=\"4\">■ 예치금 충전 → 입금 순서로 진행</font></b>하셔야 오류가 없습니다!&nbsp;<div><br></div><div>■ 꼭 <font size=\"4\"><b>입금자명과 완전 동일하게</b></font> 입금해주셔야 오류가 없습니다!</div><div>입금자명은 '띄어쓰기'도 다르게 인식합니다.&nbsp;</div><div>입금자명은 '주식회사'와 '(주)'도 다르게 인식합니다.&nbsp;</div><div><br></div><div>■ 메모기능 사용은 피해주세요!</div><div>은행 입금 중 메모 작성시 일부 은행 <b><font size=\"4\">오류 발생</font></b>할 수 있습니다.</div>"
 }
