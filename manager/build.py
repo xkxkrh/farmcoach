@@ -57,6 +57,17 @@ def default_edits():
         "hideFarmPrefix": True,  # 옵션명 앞 "(팜)" 숨기기
         "groups": {},          # 그룹코드: {고친 항목}
         "options": {},         # 옵션코드: {고친 항목}
+        # 공지사항 아래 바로가기 버튼
+        "links": [
+            {"label": "입점사이트 안내", "url": "https://zrr.kr/KBvjLs", "color": "blue"},
+            {"label": "발주가이드 안내", "url": "https://zrr.kr/PbQTJU", "color": "green"},
+            {"label": "발주·정산·CS 문의 채널톡", "url": "http://pf.kakao.com/_AxhRWn", "color": "yellow"},
+            {"label": "상품·MD 문의 채널톡", "url": "http://pf.kakao.com/_UympG", "color": "yellow"},
+        ],
+        # 셀러 사이트에서 바로 틀 수 있는 영상 (파일은 docs/media/ 에 있음)
+        "videos": [
+            {"title": "발주 방법 가이드 영상", "file": "media/order-guide.mp4"},
+        ],
     }
 
 
@@ -106,10 +117,19 @@ def merged_group(g, raw_opts, edits):
             "soldout": o_soldout,
             "tax": o.get("tax", "면세"),
         })
-    out["options"] = opts
     out["soldout"] = group_soldout or (bool(opts) and all(o["soldout"] for o in opts))
-    taxes = {o["tax"] for o in opts}
+    # 품절 옵션은 셀러에게 보여주지 않음
+    out["options"] = [o for o in opts if not o["soldout"]]
+    for o in out["options"]:
+        o.pop("soldout", None)
+    taxes = {o["tax"] for o in out["options"]}
     out["tax"] = taxes.pop() if len(taxes) == 1 else ("혼합" if taxes else "")
+    # 원산지 / 제조국: 비고 안의 '원산지 : ...' 줄에서 꺼냄 (직접 고친 값이 있으면 그 값)
+    if ge.get("origin"):
+        out["origin"] = ge["origin"]
+    else:
+        m = re.search(r"(?:원산지|제조국|원재료\s*원산지)\s*[:：]\s*([^\n/]+)", out.get("note") or "")
+        out["origin"] = m.group(1).strip() if m else ""
     return out
 
 
@@ -119,7 +139,8 @@ def build(raw=None, edits=None):
     if not raw:
         return None
     groups = [merged_group(g, raw["options"], edits) for g in raw["groups"]]
-    visible = [g for g in groups if not g.pop("hidden") and g["options"]]
+    # 숨김 · 품절 그룹은 셀러 사이트에 아예 안 나감
+    visible = [g for g in groups if not g.pop("hidden") and not g.pop("soldout") and g["options"]]
     visible.sort(key=lambda g: g["date"], reverse=True)  # 최신 상품이 맨 위
 
     by_id = {g["id"]: g for g in visible}
@@ -141,6 +162,8 @@ def build(raw=None, edits=None):
         "updated": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "synced": raw.get("synced", ""),
         "notice": edits.get("notice", ""),
+        "links": [l for l in edits.get("links", []) if l.get("label") and l.get("url")],
+        "videos": [v for v in edits.get("videos", []) if v.get("file")],
         "categories": raw.get("categories", []),
         "md": md,
         "groups": visible,

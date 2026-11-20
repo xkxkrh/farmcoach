@@ -9,6 +9,8 @@
 import json
 import mimetypes
 import os
+import re
+import urllib.parse
 import subprocess
 import sys
 import threading
@@ -27,6 +29,8 @@ HERE = os.path.join(ROOT, "manager")
 UI_DIR = os.path.join(HERE, "ui")
 SITE_DIR = os.path.join(ROOT, "docs")
 CONFIG_PATH = os.path.join(HERE, "config.json")
+MEDIA_DIR = os.path.join(SITE_DIR, "media")
+MAX_VIDEO = 90 * 1000 * 1000
 PORT = 8765
 
 state = {"busy": False, "msg": "", "done": 0, "total": 0, "error": "", "last": ""}
@@ -108,6 +112,21 @@ class Handler(BaseHTTPRequestHandler):
         ctype = mimetypes.guess_type(path)[0] or "application/octet-stream"
         if ctype.startswith("text/") or ctype in ("application/javascript", "application/json"):
             ctype += "; charset=utf-8"
+        rng = self.headers.get("Range")
+        if rng and rng.startswith("bytes="):  # 영상 앞뒤로 넘기기용 (부분 전송)
+            size = os.path.getsize(path)
+            a, _, b = rng[6:].partition("-")
+            start = int(a or 0); end = min(int(b) if b else size - 1, size - 1)
+            with open(path, "rb") as f:
+                f.seek(start); data = f.read(end - start + 1)
+            self.send_response(206)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Accept-Ranges", "bytes")
+            self.send_header("Content-Range", "bytes %d-%d/%d" % (start, end, size))
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
         with open(path, "rb") as f:
             self.send(200, f.read(), ctype)
 
@@ -130,6 +149,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         p = urlparse(self.path).path
+        if p == "/api/video":
+            return self.upload_video()
         try:
             body = self.read_body()
         except json.JSONDecodeError:
@@ -162,11 +183,41 @@ class Handler(BaseHTTPRequestHandler):
                 os.remove(CONFIG_PATH)
             return self.send(200, {"ok": True})
 
+        if p == "/api/video-delete":
+            rel = body.get("file", "")
+            path = os.path.normpath(os.path.join(SITE_DIR, rel))
+            if rel.startswith("media/") and path.startswith(MEDIA_DIR) and os.path.isfile(path):
+                os.remove(path)
+            return self.send(200, {"ok": True})
+
         if p == "/api/publish":
             ok, msg = publish()
             return self.send(200, {"ok": ok, "msg": msg})
 
         return self.send(404, {"ok": False})
+
+    def upload_video(self):
+        """영상 파일 받기 → docs/media/ 에 저장. 깃허브는 한 파일 100MB까지라 90MB로 제한."""
+        n = int(self.headers.get("Content-Length") or 0)
+        if n > MAX_VIDEO:
+            self.rfile.read(n)
+            return self.send(200, {"ok": False, "msg": "영상이 너무 커요 (%.0fMB). 90MB 이하로 줄여서 올려 주세요." % (n / 1e6)})
+        name = urllib.parse.unquote(self.headers.get("X-Filename") or "video.mp4")
+        base, ext = os.path.splitext(os.path.basename(name))
+        if ext.lower() not in (".mp4", ".webm", ".mov", ".m4v"):
+            self.rfile.read(n)
+            return self.send(200, {"ok": False, "msg": "mp4 영상 파일만 올릴 수 있어요."})
+        safe = re.sub(r"[^0-9A-Za-z가-힣_-]+", "-", base).strip("-") or "video"
+        os.makedirs(MEDIA_DIR, exist_ok=True)
+        fn = "%s-%s%s" % (safe[:40], datetime.now().strftime("%m%d%H%M%S"), ext.lower())
+        with open(os.path.join(MEDIA_DIR, fn), "wb") as f:
+            left = n
+            while left:
+                chunk = self.rfile.read(min(left, 1 << 20))
+                if not chunk:
+                    break
+                f.write(chunk); left -= len(chunk)
+        return self.send(200, {"ok": True, "file": "media/" + fn, "size": n})
 
 
 def main():

@@ -5,7 +5,7 @@
   var FIELDS = [
     ["name", "상품그룹명", "wide"], ["cat", "카테고리", ""], ["ship", "기본 배송비", ""],
     ["jeju", "제주도 택배비", ""], ["island", "도서산간 택배비", ""],
-    ["link", "상세페이지 링크", "wide"], ["img", "썸네일 사진 주소", "wide"], ["note", "비고 (원산지·기타 안내)", "wide"]
+    ["origin", "원산지 (비우면 비고에서 자동)", ""], ["link", "상세페이지 링크", "wide"], ["img", "썸네일 사진 주소", "wide"], ["note", "비고 (원산지·기타 안내)", "wide"]
   ];
 
   function esc(s) {
@@ -167,20 +167,92 @@
   });
   ["#fq", "#fcat", "#fst"].forEach(function (s) { $(s).addEventListener("input", renderList); });
 
-  // ---------- 공지사항 ----------
-  function renderNotice() { $("#noticePrev").innerHTML = linkify(E.notice); }
+  // ---------- 공지사항 + 바로가기 버튼 ----------
+  var COLORS = [["blue", "파랑"], ["green", "초록"], ["yellow", "노랑"], ["dark", "검정"], ["red", "빨강"]];
+  function renderNotice() {
+    $("#noticePrev").innerHTML = linkify(E.notice);
+    $("#linkPrev").innerHTML = (E.links || []).filter(function (l) { return l.label; }).map(function (l) {
+      return '<a class="lbtn ' + esc(l.color || "blue") + '" href="' + esc(l.url) + '" target="_blank">' + esc(l.label) + " ›</a>";
+    }).join("") + (E.videos || []).map(function (v) { return '<span class="lbtn dark">▶ ' + esc(v.title) + "</span>"; }).join("");
+  }
+  function renderLinks() {
+    E.links = E.links || [];
+    $("#linkList").innerHTML = E.links.map(function (l, i) {
+      return '<div class="lrow" data-i="' + i + '"><input data-f="label" placeholder="버튼 글자 (예: 입점사이트 안내)" value="' + esc(l.label) + '">' +
+        '<input data-f="url" placeholder="https://..." value="' + esc(l.url) + '">' +
+        '<select data-f="color">' + COLORS.map(function (c) { return '<option value="' + c[0] + '"' + ((l.color || "blue") === c[0] ? " selected" : "") + ">" + c[1] + "</option>"; }).join("") + "</select>" +
+        '<span><button class="btn sm" data-mv="-1">▲</button> <button class="btn sm" data-mv="1">▼</button> <button class="btn sm" data-del>삭제</button></span></div>';
+    }).join("") || '<p class="hint">버튼이 없어요.</p>';
+    renderNotice();
+  }
   $("#notice").addEventListener("input", function () { E.notice = this.value; renderNotice(); save(); });
+  $("#linkAdd").onclick = function () { E.links.push({ label: "", url: "", color: "blue" }); renderLinks(); save(); };
+  $("#linkList").addEventListener("input", function (ev) {
+    var r = ev.target.closest(".lrow"); if (!r || !ev.target.dataset.f) return;
+    E.links[+r.dataset.i][ev.target.dataset.f] = ev.target.value.trim(); renderNotice(); save();
+  });
+  $("#linkList").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button"); if (!b) return;
+    var i = +b.closest(".lrow").dataset.i;
+    if (b.hasAttribute("data-del")) { if (!confirm("이 버튼을 지울까요?")) return; E.links.splice(i, 1); }
+    else { var j = i + Number(b.dataset.mv); if (j < 0 || j >= E.links.length) return; var t = E.links[i]; E.links[i] = E.links[j]; E.links[j] = t; }
+    renderLinks(); save();
+  });
 
-  // ---------- MD추천 ----------
+  // ---------- 영상 ----------
+  function renderVideos() {
+    E.videos = E.videos || [];
+    $("#videoList").innerHTML = E.videos.map(function (v, i) {
+      return '<div class="vrow" data-i="' + i + '"><video src="/site/' + esc(v.file) + '" controls preload="metadata"></video>' +
+        '<div><label class="f"><span>버튼 이름</span><input class="vt" value="' + esc(v.title) + '"></label><p class="hint">' + esc(v.file) + "</p></div>" +
+        '<span><button class="btn sm" data-mv="-1">▲</button> <button class="btn sm" data-mv="1">▼</button> <button class="btn sm" data-del>삭제</button></span></div>';
+    }).join("") || '<p class="hint">아직 넣은 영상이 없어요.</p>';
+    renderNotice();
+  }
+  $("#videoList").addEventListener("input", function (ev) {
+    if (!ev.target.classList.contains("vt")) return;
+    E.videos[+ev.target.closest(".vrow").dataset.i].title = ev.target.value; renderNotice(); save();
+  });
+  $("#videoList").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button"); if (!b) return;
+    var i = +b.closest(".vrow").dataset.i;
+    if (b.hasAttribute("data-del")) {
+      if (!confirm("이 영상을 지울까요? (사이트에 올리기를 누르면 셀러 사이트에서도 사라져요)")) return;
+      var gone = E.videos.splice(i, 1)[0];
+      api("/api/video-delete", { file: gone.file });
+    } else { var j = i + Number(b.dataset.mv); if (j < 0 || j >= E.videos.length) return; var t = E.videos[i]; E.videos[i] = E.videos[j]; E.videos[j] = t; }
+    renderVideos(); save();
+  });
+  $("#videoFile").addEventListener("change", function () {
+    var f = this.files[0]; this.value = "";
+    if (!f) return;
+    if (f.size > 90e6) { toast("영상이 너무 커요 (" + Math.round(f.size / 1e6) + "MB). 90MB 이하로 줄여 주세요.", true); return; }
+    $("#busy").hidden = false; $("#busyMsg").textContent = "영상 넣는 중… (" + Math.round(f.size / 1e6) + "MB)"; $("#busyBar").style.width = "50%";
+    fetch("/api/video", { method: "POST", headers: { "X-Filename": encodeURIComponent(f.name) }, body: f })
+      .then(function (r) { return r.json(); }).then(function (r) {
+        $("#busy").hidden = true;
+        if (!r.ok) return toast(r.msg, true);
+        E.videos.push({ title: f.name.replace(/\.[^.]+$/, ""), file: r.file });
+        renderVideos(); save(); toast("영상을 넣었어요. 버튼 이름을 확인해 주세요.");
+      }).catch(function () { $("#busy").hidden = true; toast("영상 넣기 실패", true); });
+  });
+
+  // ---------- MD추천 (저장하기를 눌러야 적용) ----------
+  var MDD = [], mdDirty = false;
+  function mdMark(d) {
+    mdDirty = d;
+    $("#mdState").textContent = d ? "● 저장 안 된 변경이 있어요. '저장하기'를 눌러 주세요." : "✓ 저장됨";
+    $("#mdState").className = "hint" + (d ? " dirty" : "");
+  }
   function groupById(id) { return RAW && RAW.groups.filter(function (g) { return g.id === id; })[0]; }
   function groupLabel(g) { return gval(g, "name") + "  [" + g.id + "]"; }
   function renderMD() {
     if (RAW) {
-      $("#groupNames").innerHTML = RAW.groups.filter(function (g) { return !gHidden(g); })
+      $("#groupNames").innerHTML = RAW.groups.filter(function (g) { return !gHidden(g) && !gSoldout(g); })
         .sort(function (a, b) { return a.date < b.date ? 1 : -1; })
         .map(function (g) { return '<option value="' + esc(groupLabel(g)) + '">'; }).join("");
     }
-    $("#mdList").innerHTML = E.md.map(function (p, i) {
+    $("#mdList").innerHTML = MDD.map(function (p, i) {
       var g = groupById(p.g), im = g && gval(g, "img");
       return '<div class="mdc" data-i="' + i + '">' + (im ? '<img src="' + esc(im) + '" alt="">' : '<span class="ni"></span>') +
         '<div><input list="groupNames" class="mdg" placeholder="상품 이름을 입력해서 고르세요" value="' + (g ? esc(groupLabel(g)) : "") + '">' +
@@ -188,15 +260,20 @@
           var o = OPT[oid]; if (!o) return "";
           return '<label><input type="checkbox" class="mdo" value="' + oid + '"' + (p.o.indexOf(oid) > -1 ? " checked" : "") + ">" + esc(o.name) + " (" + o.price.toLocaleString() + "원)</label>";
         }).join("") + "</div>" : "") +
-        '<textarea class="mdt" rows="2" placeholder="추천 문구 (예: 이번 주 최저가! 당도 보장 🍊)">' + esc(p.text) + "</textarea>" +
-        (g && gSoldout(g) ? '<p class="hint" style="color:#cf3b3b">⚠ 지금 품절 상태인 상품이에요.</p>' : "") + "</div>" +
+        '<textarea class="mdt" rows="2" placeholder="추천 문구 (예: 이번 주 최저가! 당도 보장)">' + esc(p.text) + "</textarea>" +
+        (g && gSoldout(g) ? '<p class="hint" style="color:#cf3b3b">⚠ 지금 품절이라 셀러 사이트에는 안 나와요.</p>' : "") + "</div>" +
         '<div class="ctl"><button class="btn sm" data-mv="-1">▲</button><button class="btn sm" data-mv="1">▼</button><button class="btn sm" data-del>삭제</button></div></div>';
     }).join("") || '<p class="hint">아직 추천 상품이 없어요.</p>';
   }
-  $("#mdAdd").onclick = function () { E.md.push({ g: "", o: [], text: "" }); renderMD(); save(); };
+  $("#mdAdd").onclick = function () { MDD.push({ g: "", o: [], text: "" }); renderMD(); mdMark(true); };
+  $("#mdSave").onclick = function () {
+    E.md = JSON.parse(JSON.stringify(MDD.filter(function (p) { return p.g; })));
+    MDD = JSON.parse(JSON.stringify(E.md));
+    save(); renderMD(); mdMark(false); toast("MD추천을 저장했어요. '사이트에 올리기'를 누르면 셀러 사이트에 나와요.");
+  };
   $("#mdList").addEventListener("change", function (ev) {
     var c = ev.target.closest(".mdc"); if (!c) return;
-    var p = E.md[+c.dataset.i];
+    var p = MDD[+c.dataset.i];
     if (ev.target.classList.contains("mdg")) {
       var m = ev.target.value.match(/\[(\d+)\]\s*$/);
       p.g = m ? m[1] : ""; p.o = [];
@@ -205,19 +282,20 @@
     } else if (ev.target.classList.contains("mdo")) {
       p.o = Array.prototype.map.call(c.querySelectorAll(".mdo:checked"), function (x) { return x.value; });
     }
-    save();
+    mdMark(true);
   });
   $("#mdList").addEventListener("input", function (ev) {
     if (!ev.target.classList.contains("mdt")) return;
-    E.md[+ev.target.closest(".mdc").dataset.i].text = ev.target.value; save();
+    MDD[+ev.target.closest(".mdc").dataset.i].text = ev.target.value; mdMark(true);
   });
   $("#mdList").addEventListener("click", function (ev) {
     var b = ev.target.closest("button"); if (!b) return;
     var i = +b.closest(".mdc").dataset.i;
-    if (b.hasAttribute("data-del")) { if (!confirm("이 추천 상품을 지울까요?")) return; E.md.splice(i, 1); }
-    else { var j = i + Number(b.dataset.mv); if (j < 0 || j >= E.md.length) return; var t = E.md[i]; E.md[i] = E.md[j]; E.md[j] = t; }
-    renderMD(); save();
+    if (b.hasAttribute("data-del")) { if (!confirm("이 추천 상품을 지울까요?")) return; MDD.splice(i, 1); }
+    else { var j = i + Number(b.dataset.mv); if (j < 0 || j >= MDD.length) return; var t = MDD[i]; MDD[i] = MDD[j]; MDD[j] = t; }
+    renderMD(); mdMark(true);
   });
+  window.addEventListener("beforeunload", function (e) { if (mdDirty) { e.preventDefault(); e.returnValue = ""; } });
 
   // ---------- 설정 ----------
   $("#hidePrefix").addEventListener("change", function () { E.hideFarmPrefix = this.checked; save(); });
@@ -229,6 +307,7 @@
     document.querySelectorAll("#tabs button").forEach(function (x) { x.classList.toggle("on", x === b); });
     document.querySelectorAll(".tab").forEach(function (x) { x.classList.toggle("on", x.id === "tab-" + b.dataset.tab); });
     if (b.dataset.tab === "md") renderMD();
+    if (b.dataset.tab === "video") renderVideos();
   });
 
   // ---------- 불러오기 / 올리기 ----------
@@ -256,6 +335,7 @@
     this.returnValue = "";
   });
   $("#btnPublish").onclick = function () {
+    if (mdDirty && !confirm("MD추천에 저장 안 된 변경이 있어요. 저장하지 않고 올릴까요?")) return;
     if (!confirm("지금 내용을 셀러 사이트에 올릴까요?")) return;
     var b = this; b.disabled = true; b.textContent = "올리는 중…";
     clearTimeout(saveTimer);
@@ -271,7 +351,8 @@
       $("#fcat").innerHTML = '<option value="">전체 카테고리</option>' + CATS.map(function (c) { return '<option value="' + c.code + '">' + esc(c.name) + "</option>"; }).join("");
       $("#status").textContent = RAW ? "마지막 불러오기: " + (RAW.synced || "-") + " · 상품그룹 " + RAW.groups.length + "개" : "아직 불러온 적 없음";
       $("#loginInfo").textContent = s.hasPassword ? "저장됨 (아이디: " + s.savedId + ")" : "저장 안 됨";
-      $("#notice").value = E.notice; renderNotice();
+      $("#notice").value = E.notice; renderLinks(); renderVideos();
+      MDD = JSON.parse(JSON.stringify(E.md || [])); mdMark(false);
       $("#hidePrefix").checked = E.hideFarmPrefix !== false;
       if ($("#login input[name=id]")) $("#login input[name=id]").value = s.savedId || "";
       renderList(); renderEdit(); renderMD();

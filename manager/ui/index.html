@@ -19,6 +19,7 @@
   <button data-tab="products" class="on">상품 편집</button>
   <button data-tab="notice">공지사항</button>
   <button data-tab="md">MD추천</button>
+  <button data-tab="video">영상</button>
   <button data-tab="settings">설정</button>
   <span id="saved" class="saved"></span>
 </nav>
@@ -48,15 +49,30 @@
     <div class="two">
       <div><h2>공지사항 쓰기</h2><p class="hint">여기에 쓴 내용이 셀러 사이트 홈 화면에 그대로 나와요. 주소(https://…)는 자동으로 링크가 돼요.</p>
         <textarea id="notice" rows="22"></textarea></div>
-      <div><h2>미리보기</h2><div id="noticePrev" class="preview"></div></div>
+      <div><h2>미리보기</h2><div id="noticePrev" class="preview"></div><div id="linkPrev" class="linkprev"></div></div>
     </div>
+    <h2 style="margin-top:24px">바로가기 버튼</h2>
+    <p class="hint">공지사항 아래에 큰 버튼으로 나와요. 누르면 적어둔 주소로 이동해요. (영상 버튼은 '영상' 탭에서 넣으면 자동으로 생겨요)</p>
+    <div id="linkList"></div>
+    <button id="linkAdd" class="btn">+ 버튼 추가</button>
+  </section>
+
+  <section id="tab-video" class="tab">
+    <h2>영상</h2>
+    <p class="hint">여기에 넣은 영상은 셀러 사이트 공지사항 아래에 <b>▶ 영상 버튼</b>으로 나오고, 누르면 새 창에서 바로 재생돼요.<br>mp4 파일, 90MB 이하로 넣어 주세요. 넣은 뒤 <b>⬆ 사이트에 올리기</b>를 눌러야 셀러에게 보여요.</p>
+    <div id="videoList"></div>
+    <label class="btn" style="margin-top:8px">+ 영상 파일 넣기<input id="videoFile" type="file" accept="video/mp4,video/webm,video/quicktime" hidden></label>
   </section>
 
   <section id="tab-md" class="tab">
     <h2>금주의 MD추천 상품</h2>
     <p class="hint">홈 화면 오른쪽에 나오는 추천 상품이에요. 상품을 고르고, 보여줄 옵션과 추천 문구를 적어 주세요. (옵션을 하나도 안 고르면 앞의 3개가 나와요)</p>
     <div id="mdList"></div>
-    <button id="mdAdd" class="btn">+ 추천 상품 추가</button>
+    <div class="row-left">
+      <button id="mdAdd" class="btn">+ 추천 상품 추가</button>
+      <button id="mdSave" class="btn pri">💾 저장하기</button>
+      <span id="mdState" class="hint" style="margin:0"></span>
+    </div>
     <datalist id="groupNames"></datalist>
   </section>
 

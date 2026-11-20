@@ -70,6 +70,14 @@ table.ot{width:100%;border-collapse:collapse}
 .mdc .opts input{width:auto}
 .mdc .ctl{display:flex;flex-direction:column;gap:6px}
 
+.row-left{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#mdState.dirty{color:#cf3b3b;font-weight:700}
+.lrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) 120px auto;gap:8px;align-items:center;margin-bottom:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px}
+.linkprev{display:grid;gap:8px;margin-top:10px}
+.lbtn{display:block;border-radius:12px;padding:12px 16px;font-weight:800;color:#fff;text-decoration:none}
+.lbtn.blue{background:#2563eb}.lbtn.green{background:#16a34a}.lbtn.yellow{background:#facc15;color:#2b2100}.lbtn.dark{background:#1f2937}.lbtn.red{background:#dc2626}
+.vrow{display:grid;grid-template-columns:260px minmax(0,1fr) auto;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.vrow video{width:260px;border-radius:8px;background:#000}
 dialog{border:0;border-radius:14px;padding:24px;width:min(92vw,400px)}
 dialog::backdrop{background:rgba(0,0,0,.45)}
 dialog label{display:flex;flex-direction:column;gap:4px;margin:10px 0;font-weight:700;font-size:13px}

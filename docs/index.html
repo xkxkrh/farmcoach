@@ -19,10 +19,21 @@
   <span class="updated" id="updated"></span>
 </header>
 <div class="wrap">
-  <nav class="side" id="side" aria-label="카테고리"></nav>
+  <nav class="side" aria-label="카테고리"><div id="side"></div><div id="sideLinks" class="side-links"></div></nav>
   <main id="main"><p class="loading">상품을 불러오는 중…</p></main>
 </div>
-<dialog id="viewer"><img alt=""><button type="button" aria-label="닫기">✕</button></dialog>
+
+<div class="cmpbar" id="cmpbar" hidden>
+  <span id="cmpcount"></span>
+  <button type="button" class="btn pri" id="cmpOpen">비교하여보기</button>
+  <button type="button" class="btn" id="cmpClear">선택 해제</button>
+</div>
+
+<dialog id="viewer" class="imgview"><img alt=""><button type="button" class="x" aria-label="닫기">✕</button></dialog>
+<dialog id="player" class="pop"><div class="pophead"><b id="playerTitle"></b><button type="button" class="x" aria-label="닫기">✕</button></div>
+  <video id="playerVideo" controls playsinline preload="metadata"></video></dialog>
+<dialog id="compare" class="pop wide"><div class="pophead"><b>선택한 상품 비교</b><button type="button" class="x" aria-label="닫기">✕</button></div>
+  <div class="cmpwrap" id="cmpTable"></div></dialog>
 <div class="toast" id="toast" role="status"></div>
 <script src="app.js"></script>
 </body>
