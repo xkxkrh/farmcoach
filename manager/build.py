@@ -170,4 +170,27 @@ def build(raw=None, edits=None):
         "groups": visible,
     }
     save_json(OUT_PATH, data, compact=True)
+    stamp_versions()
     return data
+
+
+def stamp_versions():
+    """index.html 이 app.js 등을 부를 때 '?v=내용지문'을 붙임.
+    파일 내용이 바뀌면 지문도 바뀌어서, 셀러 브라우저가 옛날 파일을 쓰지 않고 바로 새 파일을 받음."""
+    import hashlib
+    site = os.path.dirname(OUT_PATH)
+    page = os.path.join(site, "index.html")
+    try:
+        html = open(page, encoding="utf-8").read()
+    except FileNotFoundError:
+        return
+    new = html
+    for name in ("app.css", "app.js", "notice.js"):
+        try:
+            h = hashlib.md5(open(os.path.join(site, name), "rb").read()).hexdigest()[:8]
+        except FileNotFoundError:
+            continue
+        new = re.sub(r'(["\'])' + re.escape(name) + r'(\?v=[0-9a-f]+)?(["\'])', r"\g<1>%s?v=%s\g<3>" % (name, h), new)
+    if new != html:
+        with open(page, "w", encoding="utf-8", newline="") as f:
+            f.write(new)
