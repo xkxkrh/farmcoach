@@ -132,6 +132,14 @@ def _conflict_label(path, raw):
 
 def _rebase_onto_remote(resolve):
     """내 커밋들을 원격 최신 위로 옮김. 반환: (ok, conflicts[labels], msg)"""
+    def raw_at(rev):
+        c, t = git("show", "%s:%s" % (rev, RAW_REL))
+        try:
+            return json.loads(t) if c == 0 else {}
+        except ValueError:
+            return {}
+    mine, theirs = raw_at("HEAD"), raw_at("origin/main")
+    latest = mine if mine.get("synced", "") > theirs.get("synced", "") else theirs
     code, out = git("rebase", "--autostash", "origin/main")
     regen = False
     for _ in range(50):
@@ -188,6 +196,10 @@ def _rebase_onto_remote(resolve):
         return False, [], "자동으로 합치지 못했어요:\n" + out[-500:]
     if "autostash" in out.lower() and "conflict" in out.lower():
         return False, [], "받은 내용과 이 PC에서 고치던 프로그램 파일이 겹쳤어요. 개발 담당자에게 알려 주세요."
+    # 상품 원본은 줄 단위로 섞지 않고, 더 최근에 불러온 것 하나만 통째로 남김 (예전 상품이 섞여 남지 않게)
+    if latest and build.load_json(build.SHARED_RAW_PATH, {}) != latest:
+        build.save_json(build.SHARED_RAW_PATH, latest)
+        regen = True
     if regen:
         build.build()                               # 합쳐진 내용으로 사이트 데이터 다시 만들기
         git("add", "docs", "manager/data")
@@ -197,6 +209,13 @@ def _rebase_onto_remote(resolve):
 
 
 def publish(resolve=None):
+    r = _publish(resolve)
+    if r.get("ok"):
+        build.purge_old_raw()
+    return r
+
+
+def _publish(resolve=None):
     """resolve: None(겹치면 멈추고 물어봄) | 'mine'(겹친 칸은 내 것) | 'theirs'(겹친 칸은 다른 사람 것)"""
     if not os.path.exists(build.OUT_PATH):
         return {"ok": False, "msg": "아직 불러온 상품이 없어요. 먼저 '팜코치에서 불러오기'를 눌러 주세요."}

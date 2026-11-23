@@ -23,9 +23,16 @@
     var src = big ? (g.big || g.img) : g.img;
     return src ? '<img src="' + esc(src) + '" alt="" loading="lazy" decoding="async">' : '<span class="noimg">사진 없음</span>';
   }
+  // NEW: 상품그룹 등록일부터 2주. 2주 안에 새 상품이 하나도 없으면 가장 최근 2개 (목록은 최신순)
+  var newIds = null;
   function isNew(g) {
-    var a = new Date(g.date.replace(" ", "T")), b = new Date((D.updated || "").replace(" ", "T"));
-    return (b - a) / 86400000 <= 7;
+    if (!newIds) {
+      var since = new Date(); since.setHours(0, 0, 0, 0); since.setDate(since.getDate() - 14);
+      var fresh = D.groups.filter(function (x) { return new Date(x.date.replace(" ", "T")) >= since; });
+      if (!fresh.length) fresh = D.groups.slice(0, 2);
+      newIds = fresh.map(function (x) { return x.id; });
+    }
+    return newIds.indexOf(g.id) > -1;
   }
   function catName(code) {
     for (var i = 0; i < D.categories.length; i++) if (D.categories[i].code === code) return D.categories[i].name;
@@ -53,13 +60,15 @@
 
   // ---------- 바로가기 버튼 + 영상 ----------
   function linkButtons() {
-    return (D.links || []).map(function (l) {
-      var c = l.color || "blue";
-      return '<a class="lbtn ' + esc(c) + '" href="' + esc(l.url) + '" target="_blank" rel="noopener"><span class="i">' + (LINK_ICONS[c] || "🔗") +
-        "</span>" + esc(l.label) + '<span class="go">›</span></a>';
-    }).join("") + (D.videos || []).map(function (v, i) {
+    function one(l) {
+      var c = l.color || "blue", m = l.label.match(/^(\p{Extended_Pictographic}\uFE0F?)\s*(.+)$/u);  // 이름 앞 그림글자가 있으면 그걸 아이콘으로
+      return '<a class="lbtn ' + esc(c) + '" href="' + esc(l.url) + '" target="_blank" rel="noopener"><span class="i">' + (m ? m[1] : LINK_ICONS[c] || "🔗") +
+        "</span>" + esc(m ? m[2] : l.label) + '<span class="go">›</span></a>';
+    }
+    var links = D.links || [];
+    return links.filter(function (l) { return !l.last; }).map(one).join("") + (D.videos || []).map(function (v, i) {
       return '<button type="button" class="lbtn video" data-video="' + i + '"><span class="i">▶</span>' + esc(v.title) + '<span class="go">›</span></button>';
-    }).join("");
+    }).join("") + links.filter(function (l) { return l.last; }).map(one).join("");
   }
   function playVideo(i) {
     var v = D.videos[i]; if (!v) return;
@@ -118,7 +127,7 @@
         '</td><td class="pr">' + chgBadges([o]) + won(o.price) + "</td></tr>";
     }).join("");
     return '<article class="card pc' + (on ? " picked" : "") + '" id="g' + g.id + '">' +
-      '<label class="pick"><input type="checkbox" data-pick="' + g.id + '"' + (on ? " checked" : "") + ">비교</label>" +
+      '<label class="pick"><input type="checkbox" data-pick="' + g.id + '"' + (on ? " checked" : "") + ' aria-label="비교에 담기"><span class="ck"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="cl">비교</span></label>' +
       '<button class="thumb" type="button" data-big="' + esc(g.big || g.img) + '" aria-label="사진 크게 보기">' + img(g, true) + "</button>" +
       '<div class="pb"><div class="badges">' + (isNew(g) ? '<span class="b b-new">NEW</span>' : "") + taxBadge(g.tax) + chgBadges(g.options) + "</div>" +
       "<h3>" + esc(g.name) + "</h3>" + facts(g) +
@@ -164,11 +173,14 @@
     picked = picked.filter(function (id) { return byId[id]; });
     savePicked();
     $("#cmpbar").hidden = !picked.length;
-    $("#cmpcount").textContent = "선택한 상품 " + picked.length + "개";
+    $("#cmpcount").textContent = picked.length === 1 ? "1개 선택 · 하나 더 고르세요" : picked.length + "개 선택 · 비교할 수 있어요";
+    $("#cmpOpen").disabled = picked.length < 2;
     var b = main.querySelector("[data-cmp]"); if (b) b.textContent = "⚖ 비교하여보기 (" + picked.length + ")";
   }
   function openCompare() {
-    if (!picked.length) { toast("비교할 상품의 '비교'를 먼저 체크해 주세요"); return; }
+    if (picked.length < 2 && !$("#compare").open) {
+      toast(picked.length ? "하나 더 고르면 비교할 수 있어요" : "비교할 상품의 '비교'를 먼저 체크해 주세요"); return;
+    }
     var gs = picked.map(function (id) { return byId[id]; });
     function row(label, f) { return "<tr><th>" + label + "</th>" + gs.map(function (g) { return "<td>" + f(g) + "</td>"; }).join("") + "</tr>"; }
     var t = '<table class="cmpt"><tbody>' +
@@ -207,6 +219,13 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, 1600);
   }
   document.addEventListener("click", function (e) {
+    // 검색 중에 메뉴를 누르면 검색을 지우고 그 메뉴로 (같은 메뉴라 주소가 안 바뀌어도)
+    var nav = e.target.closest('a[href^="#/"]');
+    if (nav && !e.ctrlKey && !e.metaKey && !e.shiftKey && $("#q").value) {
+      $("#q").value = ""; clearTimeout(qTimer);
+      if ((location.hash || "#/") === nav.getAttribute("href")) { e.preventDefault(); route(); }
+      return;
+    }
     var v = e.target.closest("[data-video]"); if (v) { playVideo(+v.dataset.video); return; }
     var th = e.target.closest(".thumb");
     if (th && th.dataset.big) { var w = $("#viewer"); w.querySelector("img").src = th.dataset.big; w.showModal(); return; }
@@ -228,7 +247,7 @@
     }
     var x = e.target.closest(".x"); if (x) { x.closest("dialog").close(); return; }
     var on = e.target.closest(".oname");
-    if (on && navigator.clipboard) navigator.clipboard.writeText(on.firstChild.textContent.trim()).then(function () { toast("옵션명을 복사했어요"); }, function () {});
+    if (on && navigator.clipboard) navigator.clipboard.writeText(on.firstChild.textContent.trim()).then(function () { toast("옵션명을 복사했어요"); }, function () { toast("복사하지 못했어요. 글자를 길게 눌러 복사해 주세요"); });
   });
   $("#viewer").addEventListener("click", function () { this.close(); });
   ["#player", "#compare"].forEach(function (s) { $(s).addEventListener("click", function (e) { if (e.target === this) this.close(); }); });

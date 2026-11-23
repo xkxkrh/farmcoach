@@ -21,9 +21,9 @@
    "color": "blue"
   },
   {
-   "label": "발주가이드 안내",
-   "url": "https://zrr.kr/PbQTJU",
-   "color": "green"
+   "label": "📢팜코치 B2B 공지전용방",
+   "url": "https://open.kakao.com/o/gA5kL9Rg",
+   "color": "yellow"
   },
   {
    "label": "발주·정산·CS 문의 채널톡",
@@ -34,6 +34,12 @@
    "label": "상품·MD 문의 채널톡",
    "url": "http://pf.kakao.com/_UympG",
    "color": "yellow"
+  },
+  {
+   "label": "발주가이드 안내",
+   "url": "https://zrr.kr/PbQTJU",
+   "color": "green",
+   "last": true
   }
  ],
  "videos": [

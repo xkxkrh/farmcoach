@@ -84,6 +84,13 @@ def load_raw():
     return shared if shared.get("synced", "") > mine.get("synced", "") else mine
 
 
+def purge_old_raw():
+    """[사이트에 올리기]로 확정된 자료보다 오래된 이 PC의 상품 원본을 지움 (최신 자료만 남김)."""
+    mine, shared = load_json(RAW_PATH, None), load_json(SHARED_RAW_PATH, None)
+    if mine and shared and mine.get("synced", "") < shared.get("synced", ""):
+        os.remove(RAW_PATH)
+
+
 def save_shared_raw(raw, visible):
     """셀러 사이트에 실제로 나가는 상품·옵션만 남겨서 저장 (깃허브가 공개라서 숨긴 상품·거래처 전용 상품은 빼고 올림)."""
     keep_g = {g["id"]: {o["id"] for o in g["options"]} for g in visible}

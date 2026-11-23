@@ -22,6 +22,7 @@
     return fetch(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
       .then(function (r) { return r.json(); });
   }
+  function lost() { toast("프로그램과 연결이 끊겼어요. 런처에서 '실행'을 다시 눌러 주세요.", true); }
   function catName(c) { var x = CATS.filter(function (k) { return k.code === c; })[0]; return x ? x.name : "미지정"; }
 
   // ---------- 상태 계산 (build.py와 같은 규칙) ----------
@@ -39,7 +40,8 @@
     $("#saved").textContent = "저장 중…";
     clearTimeout(saveTimer);
     saveTimer = setTimeout(function () {
-      api("/api/edits", E).then(function () { $("#saved").textContent = "✓ 자동 저장됨 (" + new Date().toLocaleTimeString("ko-KR") + ")"; });
+      api("/api/edits", E).then(function () { $("#saved").textContent = "✓ 자동 저장됨 (" + new Date().toLocaleTimeString("ko-KR") + ")"; })
+        .catch(function () { $("#saved").textContent = "⚠ 저장 못 함"; lost(); });
     }, 500);
   }
   function setEdit(bucket, id, key, value, original) {
@@ -49,8 +51,26 @@
     save();
   }
 
+  // ---------- 누르는 중에는 화면을 다시 그리지 않기 ----------
+  // 칸을 고친 직후 다른 것을 누르면, 누르는 도중 화면이 다시 그려져 첫 클릭이 사라지던 문제를 막음
+  var mouseDown = false, waitList = false, waitEdit = false, drawing = false;
+  function flush() {
+    if (mouseDown) return;
+    if (waitList) { waitList = false; renderList(); }
+    var a = document.activeElement;
+    if (waitEdit && !(a && a.tagName === "SELECT" && $("#gedit").contains(a))) { waitEdit = false; renderEdit(); }  // 목록상자를 펼친 중이면 기다림
+  }
+  function release() { mouseDown = false; setTimeout(flush, 0); }
+  document.addEventListener("mousedown", function (e) { mouseDown = e.button === 0; }, true);
+  document.addEventListener("mouseup", release, true);
+  document.addEventListener("dragend", release, true);
+  document.addEventListener("keydown", function () { mouseDown = false; }, true);
+  document.addEventListener("change", function (e) { if (e.target.tagName === "SELECT") mouseDown = false; }, true);
+  window.addEventListener("blur", release);
+
   // ---------- 상품 목록 ----------
   function renderList() {
+    if (mouseDown) { waitList = true; return; }
     if (!RAW) { $("#glist").innerHTML = '<p class="hint" style="padding:16px">아직 불러온 상품이 없어요.<br>위의 <b>⟳ 팜코치에서 불러오기</b>를 눌러 주세요.</p>'; return; }
     var q = $("#fq").value.trim().toLowerCase(), c = $("#fcat").value, st = $("#fst").value;
     var rows = RAW.groups.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).filter(function (g) {
@@ -73,7 +93,8 @@
         (gSoldout(g) ? '<span class="tag out">품절</span>' : '<span class="tag sale">판매중</span>') +
         (gHidden(g) ? '<span class="tag hide">사이트에 안 보임</span>' : "") +
         (gEdited(g) ? '<span class="tag ed">고침</span>' : "") + "</div></div></div>";
-    }).join("") || '<p class="hint" style="padding:16px">조건에 맞는 상품이 없어요.</p>';
+    }).join("") || '<p class="hint" style="padding:16px">조건에 맞는 상품이 없어요.' +
+      (st === "out" || st === "hidden" ? "<br>다른 PC에서 받은 자료에는 판매중인 상품만 들어 있어요. <b>⟳ 팜코치에서 불러오기</b>를 누르면 이 PC에서 전체를 볼 수 있어요." : "") + "</p>";
   }
 
   // ---------- 상품 편집 ----------
@@ -93,14 +114,22 @@
   }
 
   function renderEdit() {
+    if (mouseDown) { waitEdit = true; return; }
     // 다시 그려도 커서가 있던 칸을 기억했다가 돌려놓음
     var a = document.activeElement, keep = null;
     if (a && $("#gedit").contains(a)) {
       var tr = a.closest("tr");
       keep = (a.dataset.k ? '[data-k="' + a.dataset.k + '"]' : a.dataset.ok ? 'tr[data-o="' + (tr && tr.dataset.o) + '"] [data-ok="' + a.dataset.ok + '"]' : null);
     }
+    var from = null, to = null;
+    if (keep) try { from = a.selectionStart; to = a.selectionEnd; } catch (e) {}
+    waitEdit = false; drawing = true;      // 다시 그릴 때 생기는 '칸에서 나감' 신호는 무시 (끝없이 다시 그려지던 문제)
     drawEdit();
-    if (keep) { var n = $("#gedit " + keep); if (n) n.focus(); }
+    drawing = false;
+    if (keep) {
+      var n = $("#gedit " + keep);
+      if (n) { n.focus({ preventScroll: true }); if (from != null) try { n.setSelectionRange(from, to); } catch (e) {} }  // 커서 자리도 그대로
+    }
   }
   function drawEdit() {
     var g = RAW && RAW.groups.filter(function (x) { return x.id === sel; })[0];
@@ -150,8 +179,9 @@
     if (!typing) renderEdit();
   }
   $("#gedit").addEventListener("focusout", function (ev) {
-    if (!ev.target.matches("input,textarea")) return;
-    setTimeout(renderEdit, 0); // 다음 칸으로 커서가 옮겨간 뒤에 다시 그림
+    if (drawing || !ev.target.matches("input,textarea,select")) return;
+    if (!ev.target.matches("select")) waitEdit = true;
+    setTimeout(flush, 0); // 다음 칸으로 커서가 옮겨간 뒤에 다시 그림
   });
   $("#gedit").addEventListener("click", function (ev) {
     var r = ev.target.closest("[data-reset]");
@@ -171,9 +201,12 @@
   var COLORS = [["blue", "파랑"], ["green", "초록"], ["yellow", "노랑"], ["dark", "검정"], ["red", "빨강"]];
   function renderNotice() {
     $("#noticePrev").innerHTML = FC_cleanHtml(E.noticeHtml != null ? E.noticeHtml : FC_textToHtml(E.notice));
-    $("#linkPrev").innerHTML = (E.links || []).filter(function (l) { return l.label; }).map(function (l) {
+    function one(l) {
       return '<a class="lbtn ' + esc(l.color || "blue") + '" href="' + esc(l.url) + '" target="_blank">' + esc(l.label) + " ›</a>";
-    }).join("") + (E.videos || []).map(function (v) { return '<span class="lbtn dark">▶ ' + esc(v.title) + "</span>"; }).join("");
+    }
+    var links = (E.links || []).filter(function (l) { return l.label; });
+    $("#linkPrev").innerHTML = links.filter(function (l) { return !l.last; }).map(one).join("") + (E.videos || []).map(function (v) { return '<a class="lbtn dark" href="/site/' + esc(v.file) + '" target="_blank">▶ ' + esc(v.title) + "</a>"; }).join("") +
+      links.filter(function (l) { return l.last; }).map(one).join("");
   }
   function renderLinks() {
     E.links = E.links || [];
@@ -181,7 +214,7 @@
       return '<div class="lrow" data-i="' + i + '"><input data-f="label" placeholder="버튼 글자 (예: 입점사이트 안내)" value="' + esc(l.label) + '">' +
         '<input data-f="url" placeholder="https://..." value="' + esc(l.url) + '">' +
         '<select data-f="color">' + COLORS.map(function (c) { return '<option value="' + c[0] + '"' + ((l.color || "blue") === c[0] ? " selected" : "") + ">" + c[1] + "</option>"; }).join("") + "</select>" +
-        '<span><button class="btn sm" data-mv="-1">▲</button> <button class="btn sm" data-mv="1">▼</button> <button class="btn sm" data-del>삭제</button></span></div>';
+        '<span><label title="체크하면 영상 버튼보다 뒤(맨 끝)에 나와요"><input type="checkbox" data-last' + (l.last ? " checked" : "") + '> 맨 뒤</label> <button class="btn sm" data-mv="-1"' + (i ? "" : " disabled") + '>▲</button> <button class="btn sm" data-mv="1"' + (i === E.links.length - 1 ? " disabled" : "") + '>▼</button> <button class="btn sm" data-del>삭제</button></span></div>';
     }).join("") || '<p class="hint">버튼이 없어요.</p>';
     renderNotice();
   }
@@ -265,6 +298,13 @@
         var ss = window.getSelection(); ss.removeAllRanges(); ss.addRange(rr); savedRange = rr.cloneRange();
       }
     }
+    if (cmd === "removeFormat") {          // 목록·제목·정렬·링크까지 모두 지움
+      normalize();
+      ["insertUnorderedList", "insertOrderedList"].forEach(function (c) { if (document.queryCommandState(c)) document.execCommand(c); });
+      document.execCommand("formatBlock", false, "DIV");
+      document.execCommand("justifyLeft");
+      document.execCommand("unlink");
+    }
     document.execCommand("styleWithCSS", false, cmd === "hiliteColor" || cmd === "foreColor");
     var ok = document.execCommand(cmd, false, val == null ? null : val);
     if (!ok && cmd === "hiliteColor") ok = document.execCommand("backColor", false, val);
@@ -321,6 +361,12 @@
     var r = ev.target.closest(".lrow"); if (!r || !ev.target.dataset.f) return;
     E.links[+r.dataset.i][ev.target.dataset.f] = ev.target.value.trim(); renderNotice(); save();
   });
+  $("#linkList").addEventListener("change", function (ev) {
+    if (!ev.target.hasAttribute("data-last")) return;
+    var l = E.links[+ev.target.closest(".lrow").dataset.i];
+    if (ev.target.checked) l.last = true; else delete l.last;
+    renderNotice(); save();
+  });
   $("#linkList").addEventListener("click", function (ev) {
     var b = ev.target.closest("button"); if (!b) return;
     var i = +b.closest(".lrow").dataset.i;
@@ -335,7 +381,7 @@
     $("#videoList").innerHTML = E.videos.map(function (v, i) {
       return '<div class="vrow" data-i="' + i + '"><video src="/site/' + esc(v.file) + '" controls preload="metadata"></video>' +
         '<div><label class="f"><span>버튼 이름</span><input class="vt" value="' + esc(v.title) + '"></label><p class="hint">' + esc(v.file) + "</p></div>" +
-        '<span><button class="btn sm" data-mv="-1">▲</button> <button class="btn sm" data-mv="1">▼</button> <button class="btn sm" data-del>삭제</button></span></div>';
+        '<span><button class="btn sm" data-mv="-1"' + (i ? "" : " disabled") + '>▲</button> <button class="btn sm" data-mv="1"' + (i === E.videos.length - 1 ? " disabled" : "") + '>▼</button> <button class="btn sm" data-del>삭제</button></span></div>';
     }).join("") || '<p class="hint">아직 넣은 영상이 없어요.</p>';
     renderNotice();
   }
@@ -392,7 +438,7 @@
         }).join("") + "</div>" : "") +
         '<textarea class="mdt" rows="2" placeholder="추천 문구 (예: 이번 주 최저가! 당도 보장)">' + esc(p.text) + "</textarea>" +
         (g && gSoldout(g) ? '<p class="hint" style="color:#cf3b3b">⚠ 지금 품절이라 셀러 사이트에는 안 나와요.</p>' : "") + "</div>" +
-        '<div class="ctl"><button class="btn sm" data-mv="-1">▲</button><button class="btn sm" data-mv="1">▼</button><button class="btn sm" data-del>삭제</button></div></div>';
+        '<div class="ctl"><button class="btn sm" data-mv="-1"' + (i ? "" : " disabled") + '>▲</button><button class="btn sm" data-mv="1"' + (i === MDD.length - 1 ? " disabled" : "") + '>▼</button><button class="btn sm" data-del>삭제</button></div></div>';
     }).join("") || '<p class="hint">아직 추천 상품이 없어요.</p>';
   }
   $("#mdAdd").onclick = function () { MDD.push({ g: "", o: [], text: "" }); renderMD(); mdMark(true); };
@@ -429,7 +475,7 @@
 
   // ---------- 설정 ----------
   $("#hidePrefix").addEventListener("change", function () { E.hideFarmPrefix = this.checked; save(); });
-  $("#forget").onclick = function () { api("/api/forget", {}).then(function () { toast("로그인 정보를 지웠어요"); load(); }); };
+  $("#forget").onclick = function () { api("/api/forget", {}).then(function () { toast("로그인 정보를 지웠어요"); load(); }).catch(lost); };
 
   // ---------- 탭 ----------
   $("#tabs").addEventListener("click", function (ev) {
@@ -445,16 +491,21 @@
     api("/api/sync", body || {}).then(function (r) {
       if (r.needLogin) { $("#login").showModal(); return; }
       $("#busy").hidden = false; poll();
-    });
+    }).catch(lost);
   }
+  var pollFail = 0;
   function poll() {
     api("/api/progress").then(function (s) {
+      pollFail = 0;
       $("#busyMsg").textContent = s.msg || "불러오는 중…";
       $("#busyBar").style.width = (s.total ? Math.max(5, 100 * s.done / s.total) : 5) + "%";
       if (s.busy) return setTimeout(poll, 700);
       $("#busy").hidden = true;
       if (s.error) { toast(s.error, true); if (/로그인 실패/.test(s.error)) $("#login").showModal(); }
       else { toast(s.msg); load(); }
+    }).catch(function () {   // 잠깐 끊긴 것일 수 있어 몇 번 더 물어봄
+      if (++pollFail < 4) return setTimeout(poll, 1000);
+      pollFail = 0; $("#busy").hidden = true; lost();
     });
   }
   $("#btnSync").onclick = function () { startSync(); };
@@ -503,7 +554,7 @@
       toast(r.msg, !r.ok);
       if (r.received) load();   // 다른 사람이 올린 내용이 합쳐졌으니 화면도 새로 그림
     }
-    api("/api/edits", E).then(function () { return api("/api/publish", {}); }).then(done)
+    api("/api/edits", E).then(function () { return api("/api/publish", {}); }).then(done).catch(lost)
       .finally(function () { b.disabled = false; b.textContent = "⬆ 사이트에 올리기"; });
   };
 
@@ -524,7 +575,7 @@
       if ($("#login input[name=id]")) $("#login input[name=id]").value = s.savedId || "";
       renderList(); renderEdit(); renderMD();
       if (done) done();
-    }).catch(function () { toast("프로그램과 연결이 끊겼어요. 런처에서 '실행'을 다시 눌러 주세요.", true); });
+    }).catch(lost);
   }
   load();
 })();
