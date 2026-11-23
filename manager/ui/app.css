@@ -64,11 +64,26 @@ table.ot{width:100%;border-collapse:collapse}
 
 .two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .preview{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;white-space:pre-wrap;line-height:1.75;min-height:200px;overflow-wrap:anywhere}
-.mdc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:14px}
-.mdc img,.mdc .ni{width:70px;height:70px;border-radius:8px;object-fit:cover;background:var(--bg)}
-.mdc .opts{display:flex;flex-wrap:wrap;gap:4px 14px;margin:8px 0}
-.mdc .opts label{display:flex;gap:6px;align-items:center;font-size:13px}
-.mdc .opts input{width:auto}
+.mdc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:grid;grid-template-columns:104px minmax(0,1fr) auto;gap:14px}
+.mdc.sel{border-color:var(--brand);box-shadow:0 0 0 2px var(--soft)}
+.mdc .mdl{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.mdl .btn{justify-content:center;padding:5px 2px;white-space:nowrap}
+.mdl [data-act=all]{border-color:#f0b4b4;color:#b42323;background:#fff6f6}
+.mdl [data-act=none]{border-color:#b5c9f5;color:#1d4fc4;background:#f5f8ff}
+.mdc img,.mdc .ni{display:block;width:104px;height:104px;border-radius:8px;object-fit:cover;background:var(--bg)}
+.mdob{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:8px 0}
+.mdsum{font-size:13px;color:var(--sub)}
+.mdpend{font-size:13px;font-weight:700;color:#cf3b3b}
+.mdpanel{border:1px solid var(--line);border-radius:10px;background:#fafbf9;padding:6px;margin:0 0 8px;max-width:640px}
+.mdpanel label{display:flex;gap:9px;align-items:center;font-size:13.5px;padding:7px 10px;border-radius:7px;cursor:pointer}
+.mdpanel label:hover{background:var(--soft)}
+.mdpanel input{width:17px;height:17px;flex:none;margin:0}
+.mdpb{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 10px 4px;border-top:1px solid var(--line);margin-top:4px}
+.mdpb .btn.pri{padding:6px 22px}
+#mdSelBar{display:flex;gap:10px;align-items:center;min-height:30px;margin:0 0 8px;font-size:13px;font-weight:700;color:var(--brand)}
+.mdsel{display:flex;gap:6px;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;cursor:pointer;padding:3px 0}
+.mdsel input{width:18px;height:18px;margin:0}
+.mdc .ctl .btn{justify-content:center;white-space:nowrap}
 .mdc .ctl{display:flex;flex-direction:column;gap:6px}
 
 .rt-wrap{display:flex;flex-direction:column;height:calc(100vh - 250px);min-height:380px;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}

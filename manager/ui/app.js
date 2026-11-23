@@ -53,10 +53,11 @@
 
   // ---------- 누르는 중에는 화면을 다시 그리지 않기 ----------
   // 칸을 고친 직후 다른 것을 누르면, 누르는 도중 화면이 다시 그려져 첫 클릭이 사라지던 문제를 막음
-  var mouseDown = false, waitList = false, waitEdit = false, drawing = false;
+  var mouseDown = false, waitList = false, waitEdit = false, waitMD = false, drawing = false;
   function flush() {
     if (mouseDown) return;
     if (waitList) { waitList = false; renderList(); }
+    if (waitMD) { waitMD = false; renderMD(); }
     var a = document.activeElement;
     if (waitEdit && !(a && a.tagName === "SELECT" && $("#gedit").contains(a))) { waitEdit = false; renderEdit(); }  // 목록상자를 펼친 중이면 기다림
   }
@@ -422,54 +423,134 @@
   }
   function groupById(id) { return RAW && RAW.groups.filter(function (g) { return g.id === id; })[0]; }
   function groupLabel(g) { return gval(g, "name") + "  [" + g.id + "]"; }
+  // MDD 한 칸: g 상품, o 적용된 옵션, text 문구 / 화면에서만 쓰는 값: _open 펼침, _draft 아직 [적용] 안 한 체크, _sel 묶어 옮기기 체크
+  function mdOpts(p) { var g = groupById(p.g); return g ? g.options.filter(function (o) { return OPT[o]; }) : []; }
+  function mdPending(p) {
+    return !!p._draft && mdOpts(p).some(function (o) { return (p._draft.indexOf(o) > -1) !== (p.o.indexOf(o) > -1); });
+  }
+  function mdClean(list) { return list.map(function (p) { return { g: p.g, o: p.o.slice(), text: p.text }; }); }
+  function mdApply(p) {   // 체크한 것을 상품의 옵션 순서대로 적용
+    var d = p._draft || p.o;
+    p.o = mdOpts(p).filter(function (o) { return d.indexOf(o) > -1; });
+    p._draft = null;
+  }
+  function mdSummary(p) {
+    var all = mdOpts(p), on = all.filter(function (o) { return p.o.indexOf(o) > -1; });
+    if (!on.length) return "고른 옵션 없음 → 앞의 3개가 나와요";
+    return "적용된 옵션 " + on.length + "개 / 전체 " + all.length + "개";
+  }
+  // 이 칸이 움직일 때 함께 움직일 칸들 (체크한 칸에서 누르면 체크한 칸 모두, 아니면 이 칸만)
+  function mdMovers(p) { return p._sel ? MDD.filter(function (x) { return x._sel; }) : [p]; }
+  function mdMoved(p, how) {   // 옮긴 뒤의 순서를 돌려줌 (더 갈 곳이 없으면 지금과 같음)
+    var mv = mdMovers(p), rest = MDD.filter(function (x) { return mv.indexOf(x) < 0; });
+    if (how === "top") return mv.concat(rest);
+    if (how === "bottom") return rest.concat(mv);
+    var a = MDD.slice(), k, t;
+    if (how === "up") { for (k = 1; k < a.length; k++) if (mv.indexOf(a[k]) > -1 && mv.indexOf(a[k - 1]) < 0) { t = a[k]; a[k] = a[k - 1]; a[k - 1] = t; } }
+    else { for (k = a.length - 2; k >= 0; k--) if (mv.indexOf(a[k]) > -1 && mv.indexOf(a[k + 1]) < 0) { t = a[k]; a[k] = a[k + 1]; a[k + 1] = t; } }
+    return a;
+  }
+  function mdCanMove(p, how) { return mdMoved(p, how).some(function (x, i) { return x !== MDD[i]; }); }
+  function mdOptHtml(p) {
+    var ids = mdOpts(p), d = p._draft || p.o, pend = '<span class="mdpend">● 아직 [적용]을 안 눌렀어요';
+    var h = '<div class="mdob"><button type="button" class="btn sm" data-act="open" aria-expanded="' + !!p._open + '">' + (p._open ? "▲ 옵션 접기" : "▼ 옵션 펼쳐보기") + "</button>" +
+      '<span class="mdsum">' + mdSummary(p) + "</span>" + (!p._open && mdPending(p) ? pend + "</span>" : "") + "</div>";
+    if (!p._open) return h;
+    return h + '<div class="mdpanel">' + (ids.map(function (oid) {
+      var o = OPT[oid];
+      return '<label><input type="checkbox" class="mdo" value="' + oid + '"' + (d.indexOf(oid) > -1 ? " checked" : "") + "><span>" + esc(o.name) + " (" + o.price.toLocaleString() + "원)</span>" +
+        (o.soldout ? '<span class="tag out">품절</span>' : "") + "</label>";
+    }).join("") || '<p class="hint">이 상품에는 옵션이 없어요.</p>') +
+      '<div class="mdpb"><button type="button" class="btn sm pri" data-act="apply">적용</button><button type="button" class="btn sm" data-act="cancel">취소</button>' + pend.replace(">", mdPending(p) ? ">" : ' style="visibility:hidden">') + "</span></div></div>";
+  }
   function renderMD() {
+    if (mouseDown) { waitMD = true; return; }
     if (RAW) {
       $("#groupNames").innerHTML = RAW.groups.filter(function (g) { return !gHidden(g) && !gSoldout(g); })
         .sort(function (a, b) { return a.date < b.date ? 1 : -1; })
         .map(function (g) { return '<option value="' + esc(groupLabel(g)) + '">'; }).join("");
     }
+    function mv(p, how, label) { return '<button type="button" class="btn sm" data-move="' + how + '"' + (mdCanMove(p, how) ? "" : " disabled") + ">" + label + "</button>"; }
     $("#mdList").innerHTML = MDD.map(function (p, i) {
       var g = groupById(p.g), im = g && gval(g, "img");
-      return '<div class="mdc" data-i="' + i + '">' + (im ? '<img src="' + esc(im) + '" alt="">' : '<span class="ni"></span>') +
+      return '<div class="mdc' + (p._sel ? " sel" : "") + '" data-i="' + i + '"><div class="mdl">' + (im ? '<img src="' + esc(im) + '" alt="">' : '<span class="ni"></span>') +
+        (g ? '<button type="button" class="btn sm" data-act="all">옵션전체선택</button><button type="button" class="btn sm" data-act="none">옵션전체해제</button>' : "") + "</div>" +
         '<div><input list="groupNames" class="mdg" placeholder="상품 이름을 입력해서 고르세요" value="' + (g ? esc(groupLabel(g)) : "") + '">' +
-        (g ? '<div class="opts">' + g.options.map(function (oid) {
-          var o = OPT[oid]; if (!o) return "";
-          return '<label><input type="checkbox" class="mdo" value="' + oid + '"' + (p.o.indexOf(oid) > -1 ? " checked" : "") + ">" + esc(o.name) + " (" + o.price.toLocaleString() + "원)</label>";
-        }).join("") + "</div>" : "") +
+        (g ? mdOptHtml(p) : "") +
         '<textarea class="mdt" rows="2" placeholder="추천 문구 (예: 이번 주 최저가! 당도 보장)">' + esc(p.text) + "</textarea>" +
         (g && gSoldout(g) ? '<p class="hint" style="color:#cf3b3b">⚠ 지금 품절이라 셀러 사이트에는 안 나와요.</p>' : "") + "</div>" +
-        '<div class="ctl"><button class="btn sm" data-mv="-1"' + (i ? "" : " disabled") + '>▲</button><button class="btn sm" data-mv="1"' + (i === MDD.length - 1 ? " disabled" : "") + '>▼</button><button class="btn sm" data-del>삭제</button></div></div>';
+        '<div class="ctl"><label class="mdsel" title="체크한 상품들을 한번에 옮겨요"><input type="checkbox" data-sel' + (p._sel ? " checked" : "") + ">묶기</label>" +
+        mv(p, "top", "⤒ 맨위로") + mv(p, "up", "▲") + mv(p, "down", "▼") + mv(p, "bottom", "⤓ 맨아래로") +
+        '<button type="button" class="btn sm" data-del>삭제</button></div></div>';
     }).join("") || '<p class="hint">아직 추천 상품이 없어요.</p>';
+    var n = MDD.filter(function (p) { return p._sel; }).length;
+    $("#mdSelBar").style.visibility = n ? "visible" : "hidden";
+    $("#mdSelN").textContent = n + "개 묶음 · 묶은 상품 중 아무 데서나 화살표를 누르면 함께 움직여요";
   }
+  function mdPick(p, id) { if (p.g === id) return false; p.g = id; p.o = []; p._draft = null; p._open = false; return true; }
   $("#mdAdd").onclick = function () { MDD.push({ g: "", o: [], text: "" }); renderMD(); mdMark(true); };
+  $("#mdSelClear").onclick = function () { MDD.forEach(function (p) { p._sel = false; }); renderMD(); };
   $("#mdSave").onclick = function () {
-    E.md = JSON.parse(JSON.stringify(MDD.filter(function (p) { return p.g; })));
-    MDD = JSON.parse(JSON.stringify(E.md));
+    var pend = MDD.filter(mdPending);
+    if (pend.length) {
+      if (!confirm("[적용]을 안 누른 옵션 체크가 " + pend.length + "개 상품에 있어요.\n함께 적용하고 저장할까요?")) return;
+      pend.forEach(mdApply);
+    }
+    MDD = MDD.filter(function (p) { return p.g; });
+    E.md = mdClean(MDD);
     save(); renderMD(); mdMark(false); toast("MD추천을 저장했어요. '사이트에 올리기'를 누르면 셀러 사이트에 나와요.");
   };
   $("#mdList").addEventListener("change", function (ev) {
     var c = ev.target.closest(".mdc"); if (!c) return;
-    var p = MDD[+c.dataset.i];
-    if (ev.target.classList.contains("mdg")) {
-      var m = ev.target.value.match(/\[(\d+)\]\s*$/);
-      p.g = m ? m[1] : ""; p.o = [];
-      if (!m) toast("목록에서 상품을 골라 주세요", true);
-      renderMD();
-    } else if (ev.target.classList.contains("mdo")) {
-      p.o = Array.prototype.map.call(c.querySelectorAll(".mdo:checked"), function (x) { return x.value; });
-    }
-    mdMark(true);
+    var p = MDD[+c.dataset.i], t = ev.target; if (!p) return;
+    if (t.classList.contains("mdg")) {
+      var m = t.value.match(/\[(\d+)\]\s*$/), ok = m && groupById(m[1]);
+      if (!ok) toast("목록에서 상품을 골라 주세요", true);
+      if (!mdPick(p, ok ? m[1] : "")) return;
+      renderMD(); mdMark(true);
+    } else if (t.classList.contains("mdo")) {   // [적용]을 눌러야 반영
+      p._draft = Array.prototype.map.call(c.querySelectorAll(".mdo:checked"), function (x) { return x.value; });
+      c.querySelector(".mdpend").style.visibility = mdPending(p) ? "" : "hidden";
+      mdMark(true);
+    } else if (t.hasAttribute("data-sel")) { p._sel = t.checked; renderMD(); }   // 묶기 체크는 저장할 내용이 아님
   });
   $("#mdList").addEventListener("input", function (ev) {
-    if (!ev.target.classList.contains("mdt")) return;
-    MDD[+ev.target.closest(".mdc").dataset.i].text = ev.target.value; mdMark(true);
+    var c = ev.target.closest(".mdc"), p = c && MDD[+c.dataset.i]; if (!p) return;
+    if (ev.target.classList.contains("mdt")) { p.text = ev.target.value; mdMark(true); }
+    else if (ev.target.classList.contains("mdg")) {   // 목록에서 고르는 순간 바로 버튼이 나오게
+      var v = ev.target.value, m = v.match(/\[(\d+)\]$/), g = m && groupById(m[1]);
+      if (g && v === groupLabel(g) && mdPick(p, g.id)) { mouseDown = false; renderMD(); mdMark(true); }
+    }
   });
   $("#mdList").addEventListener("click", function (ev) {
     var b = ev.target.closest("button"); if (!b) return;
-    var i = +b.closest(".mdc").dataset.i;
-    if (b.hasAttribute("data-del")) { if (!confirm("이 추천 상품을 지울까요?")) return; MDD.splice(i, 1); }
-    else { var j = i + Number(b.dataset.mv); if (j < 0 || j >= MDD.length) return; var t = MDD[i]; MDD[i] = MDD[j]; MDD[j] = t; }
-    renderMD(); mdMark(true);
+    var i = +b.closest(".mdc").dataset.i, p = MDD[i], act = b.dataset.act, how = b.dataset.move; if (!p) return;
+    if (b.hasAttribute("data-del")) {
+      if (!confirm("이 추천 상품을 지울까요?")) return;
+      MDD.splice(i, 1); renderMD(); mdMark(true); return;
+    }
+    var top = b.getBoundingClientRect().top;
+    if (how) {
+      if (!mdCanMove(p, how)) return;
+      MDD = mdMoved(p, how); mdMark(true);
+    } else if (act === "open") { p._open = !p._open; }
+    else if (act === "all" || act === "none") {
+      p._draft = act === "all" ? mdOpts(p) : []; mdApply(p); mdMark(true);
+      toast(act === "all" ? "옵션 " + p.o.length + "개를 모두 골랐어요" : "옵션을 모두 해제했어요 (셀러 사이트에는 앞의 3개가 나와요)");
+    } else if (act === "apply") {
+      mdApply(p); p._open = false; mdMark(true); toast("적용했어요. '저장하기'까지 눌러 주세요.");
+    } else if (act === "cancel") { p._draft = null; p._open = false; }
+    else return;
+    renderMD();
+    // 화면이 다시 그려져도 누르던 버튼이 손가락(마우스) 아래에 그대로 있게
+    var sels = { open: 'data-act="open"', apply: 'data-act="open"', cancel: 'data-act="open"', all: 'data-act="all"', none: 'data-act="none"' };
+    var card = $("#mdList").querySelector('.mdc[data-i="' + MDD.indexOf(p) + '"]');
+    var nb = card && card.querySelector("[" + (how ? 'data-move="' + how + '"' : sels[act]) + "]");
+    if (nb) {
+      if (how) window.scrollBy(0, nb.getBoundingClientRect().top - top);
+      nb.focus({ preventScroll: true });
+      if (act === "apply" || act === "cancel") nb.scrollIntoView({ block: "nearest" });
+    }
   });
   window.addEventListener("beforeunload", function (e) { if (mdDirty) { e.preventDefault(); e.returnValue = ""; } });
 
@@ -512,7 +593,7 @@
   // 새로고침: 저장된 내용을 다시 읽어서 화면을 새로 그림 (보던 상품·탭은 그대로)
   function reload() {
     if (mdDirty && !confirm("MD추천에 저장 안 된 변경이 있어요. 새로고침하면 사라져요. 계속할까요?")) return;
-    load(function () { toast("새로고침 했어요"); });
+    load(function () { toast("새로고침 했어요"); }, true);
   }
   $("#btnReload").onclick = reload;
 
@@ -558,7 +639,7 @@
       .finally(function () { b.disabled = false; b.textContent = "⬆ 사이트에 올리기"; });
   };
 
-  function load(done) {
+  function load(done, fresh) {
     api("/api/state").then(function (s) {
       RAW = s.raw; E = s.edits; OPT = (RAW && RAW.options) || {};
       CATS = (RAW && RAW.categories) || [];
@@ -570,7 +651,8 @@
       $("#status").textContent = RAW ? "마지막 불러오기: " + (RAW.synced || "-") + " · 상품그룹 " + RAW.groups.length + "개" : "아직 불러온 적 없음";
       $("#loginInfo").textContent = s.hasPassword ? "저장됨 (아이디: " + s.savedId + ")" : "저장 안 됨";
       $("#noticeEd").innerHTML = FC_cleanHtml(E.noticeHtml != null ? E.noticeHtml : FC_textToHtml(E.notice)); normalize(); renderLinks(); renderVideos();
-      MDD = JSON.parse(JSON.stringify(E.md || [])); mdMark(false);
+      // 저장 안 한 MD추천은 불러오기·올리기 뒤에도 지우지 않음 ([새로고침]을 눌렀을 때만 버림)
+      if (!mdDirty || fresh) { MDD = mdClean(E.md || []); mdMark(false); }
       $("#hidePrefix").checked = E.hideFarmPrefix !== false;
       if ($("#login input[name=id]")) $("#login input[name=id]").value = s.savedId || "";
       renderList(); renderEdit(); renderMD();
