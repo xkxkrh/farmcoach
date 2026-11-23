@@ -6,8 +6,10 @@
   var $ = function (s) { return document.querySelector(s); };
   var main = $("#main");
 
-  try { picked = JSON.parse(localStorage.getItem("fc_compare") || "[]"); } catch (e) { picked = []; }
-  function savePicked() { try { localStorage.setItem("fc_compare", JSON.stringify(picked)); } catch (e) {} }
+  // 비교 선택은 이 탭을 닫으면 지워짐 (새로고침에는 남음). 예전에 계속 남던 기록도 지움
+  try { localStorage.removeItem("fc_compare"); } catch (e) {}
+  try { picked = JSON.parse(sessionStorage.getItem("fc_compare") || "[]"); } catch (e) { picked = []; }
+  function savePicked() { try { sessionStorage.setItem("fc_compare", JSON.stringify(picked)); } catch (e) {} }
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
