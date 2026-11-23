@@ -22,7 +22,7 @@
    "name": "가공식품"
   }
  ],
- "synced": "2026-11-23 13:27",
+ "synced": "2026-11-23 13:57",
  "groups": [
   {
    "id": "10001734",
@@ -344,7 +344,7 @@
   {
    "id": "10001635",
    "name": "오징어 빠삭칩",
-   "cat": "002",
+   "cat": "005",
    "date": "2026-10-06 17:36",
    "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1791275787_46909.jpg",
    "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1791275787_46909.jpg",
