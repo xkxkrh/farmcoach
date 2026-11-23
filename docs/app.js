@@ -178,6 +178,7 @@
     main.innerHTML = '<div class="listhead"><h2 class="h">' + title + ' <span class="sub">' + groups.length + "개 · 최신순</span></h2>" +
       '<button class="btn" type="button" data-cmp>⚖ 비교하여보기 (' + picked.length + ")</button></div>" +
       (groups.length ? '<div class="grid">' + groups.map(card).join("") + "</div>" : '<p class="none">상품이 없어요.</p>');
+    measure();
     if (focusId) {
       var el = document.getElementById("g" + focusId);
       if (el) {
@@ -246,6 +247,15 @@
     } else { sideNav("home"); home(); window.scrollTo(0, 0); }
     updateCmp();
   }
+
+  // 휴대폰: 따라오는 윗부분 높이를 재서 겹치지 않게 (글자 크기가 달라도)
+  function measure() {
+    var s = document.documentElement.style;
+    s.setProperty("--top", document.querySelector(".top").offsetHeight + "px");
+    s.setProperty("--side", document.querySelector(".side").offsetHeight + "px");
+  }
+  window.addEventListener("resize", measure);
+  if (window.ResizeObserver) { var ro = new ResizeObserver(measure); ro.observe(document.querySelector(".top")); ro.observe(document.querySelector(".side")); }
 
   // ---------- 동작 ----------
   var toastTimer;

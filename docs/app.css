@@ -188,13 +188,18 @@ dialog::backdrop{background:rgba(10,15,10,.6)}
   .top{flex-wrap:wrap;padding:10px 16px;gap:10px}
   .search{order:3;max-width:none;flex-basis:100%}
   .wrap{display:block;padding:0 12px 90px}
-  .side{position:sticky;top:0;z-index:10;margin:0 -12px 12px;padding:10px 12px;background:var(--bg)}
+  .side{position:sticky;top:calc(var(--top,104px) - 1px);z-index:10;margin:0 -12px 12px;padding:10px 12px;background:var(--bg)}
   #side{flex-direction:row;overflow-x:auto;gap:6px;scrollbar-width:none}
   #side::-webkit-scrollbar{display:none}
   #side a{flex-shrink:0;padding:8px 12px;background:#fff;border:1px solid var(--line);font-size:14px}
   #side a.on{border-color:var(--brand)}
   #side hr,.side-links{display:none}
   .links{grid-template-columns:1fr}
+  /* 스크롤해도 비교하여보기 버튼이 카테고리 아래에 따라오게 */
+  .listhead{display:contents}
+  .listhead .h{min-height:38px;margin:0;padding-right:165px}
+  .listhead .btn{display:flex;width:max-content;height:38px;margin:-38px 0 16px auto;position:sticky;top:calc(var(--top,104px) + var(--side,60px) + 2px);z-index:9;box-shadow:0 2px 10px rgba(20,30,20,.18)}
+  .pc{scroll-margin-top:calc(var(--top,104px) + var(--side,60px) + 48px)}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .pb{padding:10px}
   /* 손가락으로 누르기 쉽게: 보이는 건 작아도 누르는 범위는 54x54 이상 */
