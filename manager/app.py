@@ -263,9 +263,39 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Cache-Control", "no-store")
+        # 다른 사이트가 이 화면을 몰래 끼워 넣어 누르게 하지 못하게
+        self.send_header("X-Frame-Options", "SAMEORIGIN")
+        self.send_header("Content-Security-Policy", "frame-ancestors 'self'")
+        self.send_header("Cross-Origin-Resource-Policy", "same-origin")
+        self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def from_outside(self):
+        """다른 웹사이트가 몰래 보낸 명령인지 확인. 이 프로그램 화면(과 런처)에서 온 것만 받음.
+        - Host: 주소를 속여서 들어오는 것 막기
+        - Origin / Sec-Fetch-Site: 다른 사이트 화면에서 보낸 것 막기 (런처는 브라우저가 아니라 둘 다 없음)"""
+        mine = ("127.0.0.1:%d" % PORT, "localhost:%d" % PORT)
+        if self.headers.get("Host", "") not in mine:
+            return True
+        origin = self.headers.get("Origin")
+        if origin is not None and origin not in ["http://" + h for h in mine]:
+            return True
+        if self.headers.get("Sec-Fetch-Site", "none") in ("same-origin", "none"):
+            return False
+        # 다른 사이트의 링크를 눌러 화면을 여는 것만 괜찮음 (명령·자료 요청은 안 됨)
+        return not (self.command == "GET" and self.headers.get("Sec-Fetch-Mode") == "navigate"
+                    and self.headers.get("Sec-Fetch-Dest") == "document" and not self.path.startswith("/api/"))
+
+    def refuse(self):
+        # 막힌 요청의 내용은 쓰지 않고 버림 (안 읽고 끊으면 화면에 이유가 안 보일 수 있어 조금만 읽음)
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            n = 0
+        self.rfile.read(max(0, min(n, 1 << 16)))
+        return self.send(403, {"ok": False, "msg": "다른 사이트에서 온 요청이라 막았어요. 관리 프로그램 화면에서 다시 해 주세요."})
 
     def read_body(self):
         n = int(self.headers.get("Content-Length") or 0)
@@ -298,6 +328,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send(200, f.read(), ctype)
 
     def do_GET(self):
+        if self.from_outside():
+            return self.refuse()
         p = urlparse(self.path).path
         if p == "/api/state":
             raw = build.load_raw()
@@ -316,6 +348,8 @@ class Handler(BaseHTTPRequestHandler):
         return self.serve_file(UI_DIR, p)
 
     def do_POST(self):
+        if self.from_outside():
+            return self.refuse()
         p = urlparse(self.path).path
         if p == "/api/video":
             return self.upload_video()
