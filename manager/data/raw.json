@@ -22,7 +22,7 @@
    "name": "가공식품"
   }
  ],
- "synced": "2026-11-23 13:16",
+ "synced": "2026-11-23 13:27",
  "groups": [
   {
    "id": "10001734",
@@ -50,7 +50,7 @@
   {
    "id": "10001727",
    "name": "전라도식 알배기겉절이",
-   "cat": "001",
+   "cat": "004",
    "date": "2026-11-16 11:16",
    "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1794795400_21946.jpg",
    "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1794795400_21946.jpg",
@@ -280,7 +280,7 @@
   {
    "id": "10001655",
    "name": "맛난이 명란젓 2종",
-   "cat": "005",
+   "cat": "004",
    "date": "2026-10-07 13:11",
    "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1791346261_74614.jpg",
    "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1791346261_74614.jpg",
@@ -301,7 +301,7 @@
   {
    "id": "10001647",
    "name": "20년 전통 안동식 쪼려먹는 쪼림닭",
-   "cat": "005",
+   "cat": "002",
    "date": "2026-10-06 18:17",
    "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1791278241_80363.jpg",
    "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1791278241_80363.jpg",
@@ -344,7 +344,7 @@
   {
    "id": "10001635",
    "name": "오징어 빠삭칩",
-   "cat": "005",
+   "cat": "002",
    "date": "2026-10-06 17:36",
    "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1791275787_46909.jpg",
    "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1791275787_46909.jpg",
@@ -363,7 +363,7 @@
   {
    "id": "10001628",
    "name": "닭다리살 닭갈비 2종",
-   "cat": "005",
+   "cat": "002",
    "date": "2026-10-02 17:23",
    "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1790929433_44047.jpg",
    "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1790929433_44047.jpg",
@@ -382,7 +382,7 @@
   {
    "id": "10001618",
    "name": "오리주물럭",
-   "cat": "005",
+   "cat": "002",
    "date": "2026-10-02 15:40",
    "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1790923249_69004.jpg",
    "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1790923249_69004.jpg",
