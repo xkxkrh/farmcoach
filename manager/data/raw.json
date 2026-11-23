@@ -1,4 +1,5 @@
 {
+ "changesFailed": 0,
  "categories": [
   {
    "code": "001",
@@ -21,7 +22,7 @@
    "name": "가공식품"
   }
  ],
- "synced": "2026-11-20 23:12",
+ "synced": "2026-11-23 13:16",
  "groups": [
   {
    "id": "10001734",
@@ -1714,7 +1715,7 @@
    "price": 6200,
    "soldout": false,
    "tax": "면세",
-   "remote_no": false,
+   "remote_no": true,
    "ship_grp": "기본 - 배송비무료"
   },
   "10001729": {
@@ -1723,7 +1724,7 @@
    "price": 6200,
    "soldout": false,
    "tax": "면세",
-   "remote_no": false,
+   "remote_no": true,
    "ship_grp": "기본 - 배송비무료"
   },
   "10001730": {
@@ -1732,7 +1733,7 @@
    "price": 8000,
    "soldout": false,
    "tax": "면세",
-   "remote_no": false,
+   "remote_no": true,
    "ship_grp": "기본 - 배송비무료"
   },
   "10001731": {
@@ -1741,8 +1742,14 @@
    "price": 7800,
    "soldout": false,
    "tax": "면세",
-   "remote_no": false,
-   "ship_grp": "기본 - 배송비무료"
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료",
+   "changes": [
+    [
+     "2026-11-20",
+     -400
+    ]
+   ]
   },
   "10001732": {
    "id": "10001732",
@@ -1750,8 +1757,14 @@
    "price": 8600,
    "soldout": false,
    "tax": "면세",
-   "remote_no": false,
-   "ship_grp": "기본 - 배송비무료"
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료",
+   "changes": [
+    [
+     "2026-11-20",
+     -100
+    ]
+   ]
   },
   "10001733": {
    "id": "10001733",
@@ -1759,8 +1772,14 @@
    "price": 10000,
    "soldout": false,
    "tax": "면세",
-   "remote_no": false,
-   "ship_grp": "기본 - 배송비무료"
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료",
+   "changes": [
+    [
+     "2026-11-20",
+     -400
+    ]
+   ]
   },
   "10001709": {
    "id": "10001709",
@@ -1769,7 +1788,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 생 블루베리"
+   "ship_grp": "26년 생 블루베리",
+   "changes": [
+    [
+     "2026-11-19",
+     -2700
+    ]
+   ]
   },
   "10001710": {
    "id": "10001710",
@@ -1778,7 +1803,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 생 블루베리"
+   "ship_grp": "26년 생 블루베리",
+   "changes": [
+    [
+     "2026-11-19",
+     -5600
+    ]
+   ]
   },
   "10001711": {
    "id": "10001711",
@@ -1787,7 +1818,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 생 블루베리"
+   "ship_grp": "26년 생 블루베리",
+   "changes": [
+    [
+     "2026-11-19",
+     -10000
+    ]
+   ]
   },
   "10001712": {
    "id": "10001712",
@@ -1796,7 +1833,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 생 블루베리"
+   "ship_grp": "26년 생 블루베리",
+   "changes": [
+    [
+     "2026-11-19",
+     -14300
+    ]
+   ]
   },
   "10001713": {
    "id": "10001713",
@@ -1805,7 +1848,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 생 블루베리"
+   "ship_grp": "26년 생 블루베리",
+   "changes": [
+    [
+     "2026-11-19",
+     -19300
+    ]
+   ]
   },
   "10001714": {
    "id": "10001714",
@@ -1814,7 +1863,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 생 블루베리"
+   "ship_grp": "26년 생 블루베리",
+   "changes": [
+    [
+     "2026-11-19",
+     -3400
+    ]
+   ]
   },
   "10001715": {
    "id": "10001715",
@@ -1823,7 +1878,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 생 블루베리"
+   "ship_grp": "26년 생 블루베리",
+   "changes": [
+    [
+     "2026-11-19",
+     -5400
+    ]
+   ]
   },
   "10001716": {
    "id": "10001716",
@@ -1832,7 +1893,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 생 블루베리"
+   "ship_grp": "26년 생 블루베리",
+   "changes": [
+    [
+     "2026-11-19",
+     -7200
+    ]
+   ]
   },
   "10001717": {
    "id": "10001717",
@@ -1841,7 +1908,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 생 블루베리"
+   "ship_grp": "26년 생 블루베리",
+   "changes": [
+    [
+     "2026-11-19",
+     -10100
+    ]
+   ]
   },
   "10001718": {
    "id": "10001718",
@@ -1850,7 +1923,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 생 블루베리"
+   "ship_grp": "26년 생 블루베리",
+   "changes": [
+    [
+     "2026-11-19",
+     -19400
+    ]
+   ]
   },
   "10001722": {
    "id": "10001722",
@@ -2003,7 +2082,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 타이벡감귤"
+   "ship_grp": "26년 타이벡감귤",
+   "changes": [
+    [
+     "2026-11-16",
+     -200
+    ]
+   ]
   },
   "10001691": {
    "id": "10001691",
@@ -2012,7 +2097,17 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 타이벡감귤"
+   "ship_grp": "26년 타이벡감귤",
+   "changes": [
+    [
+     "2026-11-16",
+     -300
+    ],
+    [
+     "2026-11-20",
+     -400
+    ]
+   ]
   },
   "10001692": {
    "id": "10001692",
@@ -2021,7 +2116,17 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 타이벡감귤"
+   "ship_grp": "26년 타이벡감귤",
+   "changes": [
+    [
+     "2026-11-16",
+     -300
+    ],
+    [
+     "2026-11-20",
+     -100
+    ]
+   ]
   },
   "10001693": {
    "id": "10001693",
@@ -2030,7 +2135,17 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "26년 타이벡감귤"
+   "ship_grp": "26년 타이벡감귤",
+   "changes": [
+    [
+     "2026-11-16",
+     -300
+    ],
+    [
+     "2026-11-20",
+     -300
+    ]
+   ]
   },
   "10001665": {
    "id": "10001665",
@@ -2038,7 +2153,7 @@
    "price": 6675,
    "soldout": false,
    "tax": "면세",
-   "remote_no": false,
+   "remote_no": true,
    "ship_grp": "반건조 살구"
   },
   "10001666": {
@@ -2047,7 +2162,7 @@
    "price": 12675,
    "soldout": false,
    "tax": "면세",
-   "remote_no": false,
+   "remote_no": true,
    "ship_grp": "반건조 살구"
   },
   "10001667": {
@@ -2056,7 +2171,7 @@
    "price": 20025,
    "soldout": false,
    "tax": "면세",
-   "remote_no": false,
+   "remote_no": true,
    "ship_grp": "반건조 살구"
   },
   "10001657": {
@@ -2083,7 +2198,7 @@
    "price": 20720,
    "soldout": false,
    "tax": "면세",
-   "remote_no": false,
+   "remote_no": true,
    "ship_grp": "황제 김치"
   },
   "10001648": {
@@ -2552,7 +2667,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "기본 - 배송비무료"
+   "ship_grp": "기본 - 배송비무료",
+   "changes": [
+    [
+     "2026-11-17",
+     8000
+    ]
+   ]
   },
   "10001530": {
    "id": "10001530",
@@ -2561,7 +2682,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "기본 - 배송비무료"
+   "ship_grp": "기본 - 배송비무료",
+   "changes": [
+    [
+     "2026-11-17",
+     6500
+    ]
+   ]
   },
   "10001511": {
    "id": "10001511",
@@ -2588,7 +2715,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "극조생귤"
+   "ship_grp": "극조생귤",
+   "changes": [
+    [
+     "2026-11-16",
+     -300
+    ]
+   ]
   },
   "10001515": {
    "id": "10001515",
@@ -2597,7 +2730,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "극조생귤"
+   "ship_grp": "극조생귤",
+   "changes": [
+    [
+     "2026-11-16",
+     -700
+    ]
+   ]
   },
   "10001516": {
    "id": "10001516",
@@ -2606,7 +2745,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "극조생귤"
+   "ship_grp": "극조생귤",
+   "changes": [
+    [
+     "2026-11-16",
+     -300
+    ]
+   ]
   },
   "10001517": {
    "id": "10001517",
@@ -2615,7 +2760,13 @@
    "soldout": false,
    "tax": "면세",
    "remote_no": true,
-   "ship_grp": "극조생귤"
+   "ship_grp": "극조생귤",
+   "changes": [
+    [
+     "2026-11-16",
+     -500
+    ]
+   ]
   },
   "10001320": {
    "id": "10001320",
