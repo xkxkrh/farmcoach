@@ -75,9 +75,42 @@
   function playVideo(i) {
     var v = D.videos[i]; if (!v) return;
     $("#playerTitle").textContent = v.title;
-    var el = $("#playerVideo"); el.src = v.file; $("#player").showModal();
+    var el = $("#playerVideo"); el.src = v.file;
+    chaps = chapters(v.chapters); curChap = -1;
+    $("#player").classList.toggle("wide", !!chaps.length);
+    $("#chapters").hidden = !chaps.length;
+    $("#chapters").innerHTML = '<b class="ct">타임라인</b>' + chaps.map(function (c, k) {
+      return '<button type="button" data-chap="' + k + '"><span>' + c.label + "</span>" + esc(c.title) + "</button>";
+    }).join("");
+    $("#player").showModal(); $("#chapters").scrollTop = 0; markChap();
     var p = el.play(); if (p && p.catch) p.catch(function () {});
   }
+  // 타임라인: "0:28 1단계 엑셀 업로드" 처럼 적은 줄을 읽어서 누르면 그 장면으로
+  var chaps = [], curChap = -1;
+  function chapters(text) {
+    return String(text || "").split("\n").map(function (l) {
+      var m = l.trim().match(/^(?:(\d+):)?(\d{1,3}):(\d{2})\s+(.+)$/);
+      return m && { t: (+m[1] || 0) * 3600 + m[2] * 60 + +m[3], label: (m[1] ? m[1] + ":" : "") + m[2] + ":" + m[3], title: m[4] };
+    }).filter(Boolean).sort(function (a, b) { return a.t - b.t; });
+  }
+  function markChap() {   // 지금 나오는 장면을 진하게
+    var t = $("#playerVideo").currentTime + 0.05, n = -1, box = $("#chapters");
+    chaps.forEach(function (c, k) { if (c.t <= t) n = k; });
+    if (n === curChap) return;
+    curChap = n;
+    box.querySelectorAll("[data-chap]").forEach(function (b, k) {
+      b.classList.toggle("on", k === n);
+      if (k === n) { b.setAttribute("aria-current", "true"); box.scrollTop = b.offsetTop - box.offsetTop - box.clientHeight / 2 + b.offsetHeight / 2; } else b.removeAttribute("aria-current");
+    });
+  }
+  $("#playerVideo").addEventListener("timeupdate", markChap);
+  $("#playerVideo").addEventListener("seeking", markChap);
+  $("#chapters").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-chap]"); if (!b) return;
+    var el = $("#playerVideo"), t = chaps[+b.dataset.chap].t;
+    function go() { el.currentTime = t; var p = el.play(); if (p && p.catch) p.catch(function () {}); }
+    if (el.readyState) go(); else { el.addEventListener("loadedmetadata", go, { once: true }); el.load(); }
+  });
   $("#player").addEventListener("close", function () { var el = $("#playerVideo"); el.pause(); el.removeAttribute("src"); el.load(); });
 
   // ---------- 왼쪽 메뉴 ----------

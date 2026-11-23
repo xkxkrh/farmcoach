@@ -233,7 +233,7 @@ def scenes():
 
     # 11. 마무리
     js("G.capOff();G.ptrShow(false)")
-    js("G.card(%s)" % json.dumps('<div class="logo"><span>🌱</span>팜코치 B2B</div><h1 style="font-size:66px">꼭 기억하세요!</h1>\n      <ul><li>예치금은 <b>충전하기 → 입금</b> 순서로 (입금자명 <b>9자리까지</b>)</li>\n      <li>주문서를 만든 뒤 <b>결제까지 해야</b> 출고돼요</li>\n      <li>품절 · 공지는 <b>팜코치 오픈톡방</b>에서 안내해요</li>\n      <li>궁금한 점은 <b>팜코치 B2B CS 채널톡</b>으로 문의해 주세요</li></ul>\n      <div class="g-foot">CS 채널톡 pf.kakao.com/_UympG · 오픈톡방 open.kakao.com/o/gA5kL9Rg</div>'))
+    js("G.card(%s)" % json.dumps('<div class="logo"><span>🌱</span>팜코치 B2B</div><h1 style="font-size:66px">꼭 기억하세요!</h1>\n      <ul><li>예치금은 <b>충전하기 → 입금</b> 순서로 (입금자명 <b>9자리까지</b>)</li>\n      <li>주문서를 만든 뒤 <b>결제까지 해야</b> 출고돼요</li>\n      <li>품절 · 공지는 <b>팜코치 오픈톡방</b>에서 안내해요</li>\n      <li>궁금한 점은 <b>팜코치 B2B CS 채널톡</b>으로 문의해 주세요</li></ul>\n      <div class="g-foot">CS 채널톡 pf.kakao.com/_AxhRWn · 오픈톡방 open.kakao.com/o/gA5kL9Rg</div>'))
     S(8)
 
 # ---------------------------------------------------------------- capture + encode

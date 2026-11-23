@@ -381,12 +381,13 @@
     E.videos = E.videos || [];
     $("#videoList").innerHTML = E.videos.map(function (v, i) {
       return '<div class="vrow" data-i="' + i + '"><video src="/site/' + esc(v.file) + '" controls preload="metadata"></video>' +
-        '<div><label class="f"><span>버튼 이름</span><input class="vt" value="' + esc(v.title) + '"></label><p class="hint">' + esc(v.file) + "</p></div>" +
+        '<div><label class="f"><span>버튼 이름</span><input class="vt" value="' + esc(v.title) + '"></label><label class="f"><span>타임라인 (한 줄에 하나씩: 시간 띄고 제목)</span><textarea class="vc" rows="6" placeholder="0:00 소개&#10;0:27 1단계 엑셀 업로드">' + esc(v.chapters || "") + '</textarea></label><p class="hint">' + esc(v.file) + "</p></div>" +
         '<span><button class="btn sm" data-mv="-1"' + (i ? "" : " disabled") + '>▲</button> <button class="btn sm" data-mv="1"' + (i === E.videos.length - 1 ? " disabled" : "") + '>▼</button> <button class="btn sm" data-del>삭제</button></span></div>';
     }).join("") || '<p class="hint">아직 넣은 영상이 없어요.</p>';
     renderNotice();
   }
   $("#videoList").addEventListener("input", function (ev) {
+    if (ev.target.classList.contains("vc")) { E.videos[+ev.target.closest(".vrow").dataset.i].chapters = ev.target.value; save(); return; }
     if (!ev.target.classList.contains("vt")) return;
     E.videos[+ev.target.closest(".vrow").dataset.i].title = ev.target.value; renderNotice(); save();
   });

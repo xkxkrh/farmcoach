@@ -70,7 +70,8 @@
  "videos": [
   {
    "title": "발주 방법 가이드 영상",
-   "file": "media/order-guide.mp4"
+   "file": "media/order-guide.mp4",
+   "chapters": "0:00 소개\n0:11 로그인\n0:18 상품 보기 · 예치금 확인\n0:27 1단계 엑셀 업로드\n0:47 2단계 내용 확인\n0:55 3단계 제품 매칭 · 주문서 생성\n1:18 4단계 결제 대기 확인\n1:25 5단계 예치금 충전\n1:51 6단계 입금 확인\n1:59 7단계 결제할 주문 고르기\n2:10 8단계 결제하기\n2:17 9단계 주문접수 확인\n2:29 꼭 기억하세요!"
   }
  ],
  "noticeHtml": "<div style=\"text-align:left\"><font size=\"5\"><b>📢 발주 관련 안내사항</b></font></div><div><br></div><div><b><font size=\"4\">■ <span style=\"color:rgb(225, 29, 72)\">예치금 충전 → 입금</span> 순서로 진행</font></b>하셔야 오류가 없습니다!&nbsp;</div><div><br></div><div>■ 꼭 <font size=\"4\"><b>입금자명과 완전 동일하게</b></font> 입금해주셔야 오류가 없습니다!</div><div>입금자명은 '띄어쓰기'도 다르게 인식합니다.&nbsp;</div><div>입금자명은 '주식회사'와 '(주)'도 다르게 인식합니다.&nbsp;</div><div><br></div><div>■ 메모기능 사용은 피해주세요!</div><div>은행 입금 중 <b><font size=\"4\">메모 작성시</font></b> 일부 은행 <b><font size=\"4\">오류 발생</font></b>할 수 있습니다.</div>"
