@@ -3,10 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#ffffff">
+<script>try{var t=localStorage.getItem("fc_theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <meta name="robots" content="noindex, nofollow">
 <title>팜코치 B2B 상품리스트</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e7b4f'/%3E%3Cpath d='M9 22c0-8 6-13 14-13-1 8-6 13-14 13Zm0 0 7-7' stroke='%23fff' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="app.css?v=83838e43">
+<link rel="stylesheet" href="app.css?v=6d28d104">
 </head>
 <body>
 <header class="top">
@@ -17,7 +20,9 @@
   <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
     <input id="q" type="search" placeholder="상품명·옵션명 검색" autocomplete="off"></label>
   <span class="updated" id="updated"></span>
+  <button type="button" class="theme" id="theme"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg></button>
 </header>
+<div class="tip" id="tip" hidden><span><b>사진이나 글자가 너무 어둡게 보이나요?</b><br>삼성 인터넷 설정의 다크 모드 메뉴에서 <b>'웹 콘텐츠에 어두운 화면 모드 강제 적용'</b>을 꺼 주세요. (메뉴 이름은 버전마다 조금 다를 수 있어요)</span><button type="button" class="btn" id="tipOk">알겠어요</button></div>
 <div class="wrap">
   <nav class="side" aria-label="카테고리"><div id="side"></div><div id="sideLinks" class="side-links"></div></nav>
   <main id="main"><p class="loading">상품을 불러오는 중…</p></main>
@@ -35,6 +40,6 @@
   <div class="cmpwrap" id="cmpTable"></div></dialog>
 <div class="toast" id="toast" role="status"></div>
 <script src="notice.js?v=de713f8d"></script>
-<script src="app.js?v=6361f688"></script>
+<script src="app.js?v=b9cec1aa"></script>
 </body>
 </html>

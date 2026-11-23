@@ -244,7 +244,7 @@
     else if (parts[0] === "c" && parts[1]) {
       sideNav(parts[1]);
       list((ICONS[parts[1]] || "") + " " + esc(catName(parts[1])), D.groups.filter(function (g) { return g.cat === parts[1]; }), parts[2]);
-    } else { sideNav("home"); home(); window.scrollTo(0, 0); }
+    } else { sideNav("home"); home(); noticeColors(); window.scrollTo(0, 0); }
     updateCmp();
   }
 
@@ -256,6 +256,54 @@
   }
   window.addEventListener("resize", measure);
   if (window.ResizeObserver) { var ro = new ResizeObserver(measure); ro.observe(document.querySelector(".top")); ro.observe(document.querySelector(".side")); }
+
+  // ---------- 밝게/어둡게 ----------
+  // 처음에는 휴대폰 설정을 따르고, 버튼을 누르면 그 선택을 기억함. 휴대폰 설정과 같아지면 다시 설정을 따라감
+  var root = document.documentElement, sys = window.matchMedia("(prefers-color-scheme: dark)");
+  function isDark() { return root.dataset.theme ? root.dataset.theme === "dark" : sys.matches; }
+  function applyTheme() {
+    var d = isDark(), label = d ? "밝은 화면으로 바꾸기" : "어두운 화면으로 바꾸기";
+    root.classList.toggle("is-dark", d);
+    $("#theme").title = label; $("#theme").setAttribute("aria-label", label);
+    $('meta[name="theme-color"]').content = d ? "#1c211e" : "#ffffff";
+    noticeColors();
+  }
+  $("#theme").addEventListener("click", function () {
+    var t = isDark() ? "light" : "dark", same = (t === "dark") === sys.matches;
+    if (same) delete root.dataset.theme; else root.dataset.theme = t;
+    try { if (same) localStorage.removeItem("fc_theme"); else localStorage.setItem("fc_theme", t); } catch (e) {}
+    applyTheme();
+  });
+  if (sys.addEventListener) sys.addEventListener("change", applyTheme); else if (sys.addListener) sys.addListener(applyTheme);
+
+  // 공지에 직접 고른 글자색이 어두운 화면에서 안 보이면, 같은 계열의 밝은(또는 어두운) 색으로만 바꿔 보여 줌
+  function rgb(v) { var m = /rgba?\(([^)]+)\)/.exec(v || ""), p = m && m[1].split(/[ ,/]+/).map(Number); return p && (p.length < 4 || p[3] > 0.5) ? p.slice(0, 3) : null; }
+  function lum(c) { var v = c.map(function (x) { x /= 255; return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; }
+  function ratio(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  function noticeColors() {
+    var box = document.querySelector(".notice .rich"); if (!box) return;
+    var els = [].slice.call(box.querySelectorAll("[style],font[color],a"));
+    els.forEach(function (el) {   // 먼저 원래 색으로 되돌림
+      if (el.dataset.c != null) { el.style.color = el.dataset.c; delete el.dataset.c; }
+    });
+    if (!isDark()) return;
+    els.forEach(function (el) {
+      var bg = null, n = el;
+      for (; n && !bg; n = n.parentElement) bg = rgb(getComputedStyle(n).backgroundColor);
+      var c = rgb(getComputedStyle(el).color);
+      if (!c || !bg || ratio(c, bg) >= 4.5) return;
+      var to = ratio([255, 255, 255], bg) >= ratio([0, 0, 0], bg) ? 255 : 0, k, x = c;
+      for (k = 1; k <= 20 && ratio(x, bg) < 4.5; k++) x = c.map(function (v) { return Math.round(v + (to - v) * k / 20); });
+      el.dataset.c = el.style.color; el.style.color = "rgb(" + x.join(",") + ")";
+    });
+  }
+  applyTheme();
+
+  // 삼성 인터넷은 사이트 색 위에 어두운 색을 덧칠하는 설정이 있음 (사이트에서는 켜졌는지 알 수 없음). 한 번만 안내
+  var tipSeen = false;
+  try { tipSeen = !!localStorage.getItem("fc_tip"); } catch (e) {}
+  $("#tip").hidden = tipSeen || !/SamsungBrowser\//.test(navigator.userAgent);
+  $("#tipOk").addEventListener("click", function () { $("#tip").hidden = true; try { localStorage.setItem("fc_tip", "1"); } catch (e) {} });
 
   // ---------- 동작 ----------
   var toastTimer;
