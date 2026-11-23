@@ -34,6 +34,23 @@
   function minPrice(g) { return Math.min.apply(null, g.options.map(function (o) { return o.price; })); }
   function taxBadge(t) { return t === "면세" ? '<span class="b b-free">면세</span>' : t === "과세" ? '<span class="b b-tax">과세</span>' : t === "혼합" ? '<span class="b b-tax">과세·면세</span>' : ""; }
 
+  // 최근 공급가 인상/인하: 바뀐 날을 1일째로 세어 평일 3일째까지만 보임 (주말은 세지 않음)
+  function workdays(day) {
+    var a = new Date(day + "T00:00:00"), b = new Date(), n = 0;
+    b.setHours(0, 0, 0, 0);
+    if (a > b) return 99;
+    for (; a <= b && n < 4; a.setDate(a.getDate() + 1)) if (a.getDay() % 6) n++;
+    return n;
+  }
+  function chgSign(o) {
+    var sum = (o.chg || []).reduce(function (t, c) { return workdays(c[0]) <= 3 ? t + c[1] : t; }, 0);
+    return sum > 0 ? 1 : sum < 0 ? -1 : 0;
+  }
+  function chgBadges(opts) {
+    var s = opts.map(chgSign);
+    return (s.indexOf(1) > -1 ? '<span class="b b-up">▲ 인상</span>' : "") + (s.indexOf(-1) > -1 ? '<span class="b b-down">▼ 인하</span>' : "");
+  }
+
   // ---------- 바로가기 버튼 + 영상 ----------
   function linkButtons() {
     return (D.links || []).map(function (l) {
@@ -98,12 +115,12 @@
     var on = picked.indexOf(g.id) > -1;
     var rows = g.options.map(function (o) {
       return '<tr><td class="oname" title="눌러서 옵션명 복사">' + esc(o.name) + (o.tax ? " " + taxBadge(o.tax) : "") +
-        '</td><td class="pr">' + won(o.price) + "</td></tr>";
+        '</td><td class="pr">' + chgBadges([o]) + won(o.price) + "</td></tr>";
     }).join("");
     return '<article class="card pc' + (on ? " picked" : "") + '" id="g' + g.id + '">' +
       '<label class="pick"><input type="checkbox" data-pick="' + g.id + '"' + (on ? " checked" : "") + ">비교</label>" +
       '<button class="thumb" type="button" data-big="' + esc(g.big || g.img) + '" aria-label="사진 크게 보기">' + img(g, true) + "</button>" +
-      '<div class="pb"><div class="badges">' + (isNew(g) ? '<span class="b b-new">NEW</span>' : "") + taxBadge(g.tax) + "</div>" +
+      '<div class="pb"><div class="badges">' + (isNew(g) ? '<span class="b b-new">NEW</span>' : "") + taxBadge(g.tax) + chgBadges(g.options) + "</div>" +
       "<h3>" + esc(g.name) + "</h3>" + facts(g) +
       '<div class="price">' + won(minPrice(g)) + (g.options.length > 1 ? "~<small>옵션 " + g.options.length + "개</small>" : "") + "</div>" +
       '<div class="acts"><button type="button" class="btn" data-drop="' + g.id + '">옵션·가격 ▾</button>' +

@@ -9,6 +9,7 @@ import json
 import re
 import urllib.parse
 import urllib.request
+from datetime import date, timedelta
 from concurrent.futures import ThreadPoolExecutor
 from html.parser import HTMLParser
 
@@ -277,6 +278,48 @@ def collect_policies(s, needed):
         return dict(ex.map(one, names))
 
 
+# ---------- 공급가 변경 이력 읽기 ----------
+
+PRICE_LOG_DAYS = 10  # 평일 3일을 판단하기에 넉넉한 기간만 남김
+
+
+def supply_changes(items, today=None):
+    """가격 로그에서 '공급가·기본공급가' 줄만 골라 (매입가, 거래처별 가격 제외) [[날짜, 오르내린 금액], …]. 매입가(원가) 줄은 버립니다."""
+    since = ((today or date.today()) - timedelta(days=PRICE_LOG_DAYS)).isoformat()
+    out = []
+    for it in items or []:
+        kind = strip_tags(str(it.get("price_type") or ""))
+        if kind != "공급가" or strip_tags(str(it.get("target") or "")) != "기본공급가":
+            continue
+        day = str(it.get("regdate") or "")[:10].replace(".", "-").replace("/", "-")
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", day) or day < since:
+            continue
+        diff = _won(it.get("mprice")) - _won(it.get("oprice"))
+        if diff:
+            out.append([day, diff])
+    return sorted(out)
+
+
+def collect_changes(s, codes, progress):
+    def one(code):
+        try:
+            text = s.get("/admin-app/data/", {"actpage": "product.form", "mode": "price_log", "pcode": code})
+            data = json.loads(text)
+            return code, supply_changes(data.get("items")) if data.get("ok") else None
+        except Exception:  # 이력을 못 읽어도 나머지는 계속
+            return code, None
+
+    out, failed, total = {}, 0, len(codes)
+    with ThreadPoolExecutor(max_workers=5) as ex:
+        for n, (code, ch) in enumerate(ex.map(one, codes), 1):
+            progress("공급가 변경 이력 읽는 중… (%d/%d)" % (n, total), n, total)
+            if ch is None:
+                failed += 1
+            elif ch:
+                out[code] = ch
+    return out, failed
+
+
 # ---------- 목록 읽기 ----------
 
 def _all_rows(s, actpage, extra=None, rows=1000):
@@ -388,7 +431,11 @@ def collect(user_id, password, progress=lambda msg, done=None, total=None: None)
             })
 
     used = {o for g in groups for o in g["options"]}
+    changes, failed = collect_changes(s, [o for o in sorted(used) if not options[o]["soldout"]], progress)
+    for code, ch in changes.items():
+        options[code]["changes"] = ch
     return {
+        "changesFailed": failed,
         "groups": groups,
         "options": {k: v for k, v in options.items() if k in used},
         "categories": CATEGORIES,

@@ -146,6 +146,9 @@ def merged_group(g, raw_opts, edits):
             "soldout": o_soldout,
             "tax": o.get("tax", "면세"),
         })
+        # 최근 공급가 변경 (가격을 프로그램에서 직접 고친 옵션은 로그와 달라서 표시하지 않음)
+        if o.get("changes") and "price" not in oe:
+            opts[-1]["chg"] = o["changes"]
     out["soldout"] = group_soldout or (bool(opts) and all(o["soldout"] for o in opts))
     # 품절 옵션은 셀러에게 보여주지 않음
     out["options"] = [o for o in opts if not o["soldout"]]
