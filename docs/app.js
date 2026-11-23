@@ -130,7 +130,7 @@
     }).join("");
     return '<article class="card pc' + (on ? " picked" : "") + '" id="g' + g.id + '">' +
       '<label class="pick"><input type="checkbox" data-pick="' + g.id + '"' + (on ? " checked" : "") + ' aria-label="비교에 담기"><span class="ck"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="cl">비교</span></label>' +
-      '<button class="thumb" type="button" data-big="' + esc(g.big || g.img) + '" aria-label="사진 크게 보기">' + img(g, true) + "</button>" +
+      '<div class="thumb">' + img(g, true) + "</div>" +
       '<div class="pb"><div class="badges">' + (isNew(g) ? '<span class="b b-new">NEW</span>' : "") + taxBadge(g.tax) + chgBadges(g.options) + "</div>" +
       "<h3>" + esc(g.name) + "</h3>" + facts(g) +
       '<div class="price">' + won(minPrice(g)) + (g.options.length > 1 ? "~<small>옵션 " + g.options.length + "개</small>" : "") + "</div>" +
@@ -229,8 +229,6 @@
       return;
     }
     var v = e.target.closest("[data-video]"); if (v) { playVideo(+v.dataset.video); return; }
-    var th = e.target.closest(".thumb");
-    if (th && th.dataset.big) { var w = $("#viewer"); w.querySelector("img").src = th.dataset.big; w.showModal(); return; }
     var dr = e.target.closest("[data-drop]"); if (dr) { toggleDrop(dr.dataset.drop); return; }
     if (e.target.closest("[data-cmp]") || e.target.closest("#cmpOpen")) { openCompare(); return; }
     if (e.target.closest("#cmpClear")) {
@@ -251,7 +249,6 @@
     var on = e.target.closest(".oname");
     if (on && navigator.clipboard) navigator.clipboard.writeText(on.firstChild.textContent.trim()).then(function () { toast("옵션명을 복사했어요"); }, function () { toast("복사하지 못했어요. 글자를 길게 눌러 복사해 주세요"); });
   });
-  $("#viewer").addEventListener("click", function () { this.close(); });
   ["#player", "#compare"].forEach(function (s) { $(s).addEventListener("click", function (e) { if (e.target === this) this.close(); }); });
   main.addEventListener("change", function (e) {
     var cb = e.target.closest("[data-pick]"); if (!cb) return;

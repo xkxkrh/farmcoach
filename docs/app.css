@@ -105,7 +105,7 @@ svg{display:block}
 .pick input:checked+.ck svg{stroke:#fff}
 .pick input:checked~.cl{background:var(--brand)}
 .pick input:focus-visible+.ck{outline:3px solid var(--blue);outline-offset:2px}
-.thumb{display:block;width:100%;aspect-ratio:1/1;border:0;padding:0;background:var(--bg);cursor:zoom-in;overflow:hidden}
+.thumb{display:block;width:100%;aspect-ratio:1/1;border:0;padding:0;background:var(--bg);overflow:hidden}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .noimg{display:grid;place-items:center;color:#b5bcb6;font-size:12px;width:100%;height:100%}
 .pb{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px}
@@ -155,8 +155,6 @@ svg{display:block}
 /* 팝업 */
 dialog{border:0;padding:0;border-radius:16px;background:#fff;max-width:96vw}
 dialog::backdrop{background:rgba(10,15,10,.6)}
-.imgview{max-width:min(92vw,720px)}
-.imgview img{display:block;max-width:100%;max-height:85vh}
 .x{position:absolute;top:8px;right:8px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:16px;cursor:pointer}
 .pop{width:min(1100px,96vw)}
 .pop.wide{width:min(1300px,96vw)}
