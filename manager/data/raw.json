@@ -22,8 +22,187 @@
    "name": "가공식품"
   }
  ],
- "synced": "2026-11-25 14:47",
+ "synced": "2026-11-25 18:59",
  "groups": [
+  {
+   "id": "10001805",
+   "name": "쫀득 통삼겹살",
+   "cat": "002",
+   "date": "2026-11-25 15:45",
+   "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1795589133_47382.jpg",
+   "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1795589133_47382.jpg",
+   "soldout": false,
+   "restricted": false,
+   "options": [
+    "10001798"
+   ],
+   "ship": "4,000원 / 합배송 : 1kg 기준 6개까지",
+   "jeju": "불가",
+   "island": "불가",
+   "link": "https://zrr.kr/aSWssx",
+   "note": "원산지 : 스페인산"
+  },
+  {
+   "id": "10001804",
+   "name": "26년 호풍미고구마",
+   "cat": "001",
+   "date": "2026-11-25 15:43",
+   "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1795589036_25726.jpg",
+   "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1795589036_25726.jpg",
+   "soldout": false,
+   "restricted": false,
+   "options": [
+    "10001782",
+    "10001783",
+    "10001784",
+    "10001785",
+    "10001786",
+    "10001787",
+    "10001788",
+    "10001789",
+    "10001790",
+    "10001791",
+    "10001792",
+    "10001793",
+    "10001794",
+    "10001795",
+    "10001796",
+    "10001797"
+   ],
+   "ship": "무료",
+   "jeju": "불가",
+   "island": "불가",
+   "link": "https://zrr.kr/cOcsat",
+   "note": "원산지 : 국내산(전라남도 / 비세척)\n\n실중량입니다."
+  },
+  {
+   "id": "10001803",
+   "name": "26년 호박고구마",
+   "cat": "001",
+   "date": "2026-11-25 15:42",
+   "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1795588935_26318.jpg",
+   "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1795588935_26318.jpg",
+   "soldout": false,
+   "restricted": false,
+   "options": [
+    "10001766",
+    "10001767",
+    "10001768",
+    "10001769",
+    "10001770",
+    "10001771",
+    "10001772",
+    "10001773",
+    "10001774",
+    "10001775",
+    "10001776",
+    "10001777",
+    "10001778",
+    "10001779",
+    "10001780",
+    "10001781"
+   ],
+   "ship": "무료",
+   "jeju": "불가",
+   "island": "불가",
+   "link": "https://zrr.kr/S9dxTS",
+   "note": "원산지 : 국내산(전라남도 / 비세척)\n\n실중량입니다."
+  },
+  {
+   "id": "10001802",
+   "name": "26년 밤고구마",
+   "cat": "001",
+   "date": "2026-11-25 15:39",
+   "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1795588759_39402.jpg",
+   "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1795588759_39402.jpg",
+   "soldout": false,
+   "restricted": false,
+   "options": [
+    "10001750",
+    "10001751",
+    "10001752",
+    "10001753",
+    "10001754",
+    "10001755",
+    "10001756",
+    "10001757",
+    "10001758",
+    "10001759",
+    "10001760",
+    "10001761",
+    "10001762",
+    "10001763",
+    "10001764",
+    "10001765"
+   ],
+   "ship": "무료",
+   "jeju": "불가",
+   "island": "불가",
+   "link": "https://zrr.kr/ZWxcrU",
+   "note": "원산지 : 국내산(전국수매 / 비세척)\n\n실중량입니다."
+  },
+  {
+   "id": "10001801",
+   "name": "26년 봄동",
+   "cat": "001",
+   "date": "2026-11-25 15:36",
+   "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1795588597_98368.jpg",
+   "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1795588597_98368.jpg",
+   "soldout": false,
+   "restricted": false,
+   "options": [
+    "10001744",
+    "10001745",
+    "10001746",
+    "10001747",
+    "10001748",
+    "10001749"
+   ],
+   "ship": "무료",
+   "jeju": "불가",
+   "island": "불가",
+   "link": "https://zrr.kr/1oqI38",
+   "note": "원산지 : 국내산"
+  },
+  {
+   "id": "10001800",
+   "name": "냉동 블루베리",
+   "cat": "001",
+   "date": "2026-11-25 15:33",
+   "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1795588423_13791.jpg",
+   "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1795588423_13791.jpg",
+   "soldout": false,
+   "restricted": false,
+   "options": [
+    "10001743"
+   ],
+   "ship": "무료",
+   "jeju": "불가",
+   "island": "불가",
+   "link": "https://zrr.kr/l43wyN",
+   "note": "칠레산"
+  },
+  {
+   "id": "10001799",
+   "name": "남해 시금치",
+   "cat": "001",
+   "date": "2026-11-25 15:31",
+   "img": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/thumb1_1795588330_69498.jpg",
+   "big": "https://cdn3.yourlove.co.kr/farmfood/img/prtimg/1795588330_69498.jpg",
+   "soldout": false,
+   "restricted": false,
+   "options": [
+    "10001739",
+    "10001740",
+    "10001741",
+    "10001742"
+   ],
+   "ship": "무료",
+   "jeju": "불가",
+   "island": "불가",
+   "link": "https://zrr.kr/BcZrzn",
+   "note": "원산지 : 국내산"
+  },
   {
    "id": "10001734",
    "name": "26년 조생귤",
@@ -1686,6 +1865,546 @@
   }
  ],
  "options": {
+  "10001739": {
+   "id": "10001739",
+   "name": "(팜)남해 시금치 500g",
+   "price": 5600,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001740": {
+   "id": "10001740",
+   "name": "(팜)남해 시금치 1kg",
+   "price": 7300,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001741": {
+   "id": "10001741",
+   "name": "(팜)남해 시금치 2kg",
+   "price": 10700,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001742": {
+   "id": "10001742",
+   "name": "(팜)남해 시금치 4kg",
+   "price": 16100,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001743": {
+   "id": "10001743",
+   "name": "(팜)냉동 블루베리 2kg",
+   "price": 20100,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001744": {
+   "id": "10001744",
+   "name": "(팜)봄동 1kg",
+   "price": 5500,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001745": {
+   "id": "10001745",
+   "name": "(팜)봄동 2kg",
+   "price": 7200,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001746": {
+   "id": "10001746",
+   "name": "(팜)봄동 3kg",
+   "price": 8600,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001747": {
+   "id": "10001747",
+   "name": "(팜)봄동 4kg",
+   "price": 10400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001748": {
+   "id": "10001748",
+   "name": "(팜)봄동 5kg",
+   "price": 11400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001749": {
+   "id": "10001749",
+   "name": "(팜)봄동 10kg",
+   "price": 17300,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001750": {
+   "id": "10001750",
+   "name": "(팜)밤고구마 2kg 한입 (20~50g)",
+   "price": 5100,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001751": {
+   "id": "10001751",
+   "name": "(팜)밤고구마 3kg 한입 (20~50g)",
+   "price": 6200,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001752": {
+   "id": "10001752",
+   "name": "(팜)밤고구마 5kg 한입 (20~50g)",
+   "price": 8400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001753": {
+   "id": "10001753",
+   "name": "(팜)밤고구마 10kg 한입 (20~50g)",
+   "price": 14400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001754": {
+   "id": "10001754",
+   "name": "(팜)밤고구마 2kg 중 (50~100g)",
+   "price": 6700,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001755": {
+   "id": "10001755",
+   "name": "(팜)밤고구마 3kg 중 (50~100g)",
+   "price": 8600,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001756": {
+   "id": "10001756",
+   "name": "(팜)밤고구마 5kg 중 (50~100g)",
+   "price": 12400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001757": {
+   "id": "10001757",
+   "name": "(팜)밤고구마 10kg 중 (50~100g)",
+   "price": 22400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001758": {
+   "id": "10001758",
+   "name": "(팜)밤고구마 2kg 특상 (100~300g 내외)",
+   "price": 7100,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001759": {
+   "id": "10001759",
+   "name": "(팜)밤고구마 3kg 특상 (100~300g 내외)",
+   "price": 9200,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001760": {
+   "id": "10001760",
+   "name": "(팜)밤고구마 5kg 특상 (100~300g 내외)",
+   "price": 13400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001761": {
+   "id": "10001761",
+   "name": "(팜)밤고구마 10kg 특상 (100~300g 내외)",
+   "price": 24400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001762": {
+   "id": "10001762",
+   "name": "(팜)밤고구마 2kg 대 (300g~)",
+   "price": 6300,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001763": {
+   "id": "10001763",
+   "name": "(팜)밤고구마 3kg 대 (300g~)",
+   "price": 8000,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001764": {
+   "id": "10001764",
+   "name": "(팜)밤고구마 5kg 대 (300g~)",
+   "price": 11400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001765": {
+   "id": "10001765",
+   "name": "(팜)밤고구마 10kg 대 (300g~)",
+   "price": 20400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001766": {
+   "id": "10001766",
+   "name": "(팜)호박고구마 2kg 한입 (20~50g)",
+   "price": 5100,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001767": {
+   "id": "10001767",
+   "name": "(팜)호박고구마 3kg 한입 (20~50g)",
+   "price": 6200,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001768": {
+   "id": "10001768",
+   "name": "(팜)호박고구마 5kg 한입 (20~50g)",
+   "price": 8400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001769": {
+   "id": "10001769",
+   "name": "(팜)호박고구마 10kg 한입 (20~50g)",
+   "price": 14400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001770": {
+   "id": "10001770",
+   "name": "(팜)호박고구마 2kg 중 (50~100g)",
+   "price": 6500,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001771": {
+   "id": "10001771",
+   "name": "(팜)호박고구마 3kg 중 (50~100g)",
+   "price": 8300,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001772": {
+   "id": "10001772",
+   "name": "(팜)호박고구마 5kg 중 (50~100g)",
+   "price": 11900,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001773": {
+   "id": "10001773",
+   "name": "(팜)호박고구마 10kg 중 (50~100g)",
+   "price": 21400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001774": {
+   "id": "10001774",
+   "name": "(팜)호박고구마 2kg 특상 (100~300g 내외)",
+   "price": 6900,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001775": {
+   "id": "10001775",
+   "name": "(팜)호박고구마 3kg 특상 (100~300g 내외)",
+   "price": 8900,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001776": {
+   "id": "10001776",
+   "name": "(팜)호박고구마 5kg 특상 (100~300g 내외)",
+   "price": 12900,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001777": {
+   "id": "10001777",
+   "name": "(팜)호박고구마 10kg 특상 (100~300g 내외)",
+   "price": 23400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001778": {
+   "id": "10001778",
+   "name": "(팜)호박고구마 2kg 대 (300g~)",
+   "price": 5900,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001779": {
+   "id": "10001779",
+   "name": "(팜)호박고구마 3kg 대 (300g~)",
+   "price": 7400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001780": {
+   "id": "10001780",
+   "name": "(팜)호박고구마 5kg 대 (300g~)",
+   "price": 10400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001781": {
+   "id": "10001781",
+   "name": "(팜)호박고구마 10kg 대 (300g~)",
+   "price": 18400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001782": {
+   "id": "10001782",
+   "name": "(팜)호풍미고구마 2kg 한입 (20~50g)",
+   "price": 5100,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001783": {
+   "id": "10001783",
+   "name": "(팜)호풍미고구마 3kg 한입 (20~50g)",
+   "price": 6200,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001784": {
+   "id": "10001784",
+   "name": "(팜)호풍미고구마 5kg 한입 (20~50g)",
+   "price": 8400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001785": {
+   "id": "10001785",
+   "name": "(팜)호풍미고구마 10kg 한입 (20~50g)",
+   "price": 14400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001786": {
+   "id": "10001786",
+   "name": "(팜)호풍미고구마 2kg 중 (50~100g)",
+   "price": 6500,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001787": {
+   "id": "10001787",
+   "name": "(팜)호풍미고구마 3kg 중 (50~100g)",
+   "price": 8300,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001788": {
+   "id": "10001788",
+   "name": "(팜)호풍미고구마 5kg 중 (50~100g)",
+   "price": 11900,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001789": {
+   "id": "10001789",
+   "name": "(팜)호풍미고구마 10kg 중 (50~100g)",
+   "price": 21400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001790": {
+   "id": "10001790",
+   "name": "(팜)호풍미고구마 2kg 특상 (100~300g 내외)",
+   "price": 6900,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001791": {
+   "id": "10001791",
+   "name": "(팜)호풍미고구마 3kg 특상 (100~300g 내외)",
+   "price": 8900,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001792": {
+   "id": "10001792",
+   "name": "(팜)호풍미고구마 5kg 특상 (100~300g 내외)",
+   "price": 12900,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001793": {
+   "id": "10001793",
+   "name": "(팜)호풍미고구마 10kg 특상 (100~300g 내외)",
+   "price": 23400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001794": {
+   "id": "10001794",
+   "name": "(팜)호풍미고구마 2kg 대 (300g~)",
+   "price": 5900,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001795": {
+   "id": "10001795",
+   "name": "(팜)호풍미고구마 3kg 대 (300g~)",
+   "price": 7400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001796": {
+   "id": "10001796",
+   "name": "(팜)호풍미고구마 5kg 대 (300g~)",
+   "price": 10400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001797": {
+   "id": "10001797",
+   "name": "(팜)호풍미고구마 10kg 대 (300g~)",
+   "price": 18400,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "기본 - 배송비무료"
+  },
+  "10001798": {
+   "id": "10001798",
+   "name": "(팜)쫀득 통삼겹살 1kg",
+   "price": 6700,
+   "soldout": false,
+   "tax": "면세",
+   "remote_no": true,
+   "ship_grp": "쫀득 통삼겹살"
+  },
   "10001728": {
    "id": "10001728",
    "name": "(팜)조생귤 5kg 대과(2L)",
